@@ -3,6 +3,7 @@ from entities.AliceRequest import AliceRequest
 from entities.AliceResponse import AliceResponse
 
 from flask import Flask, request
+from entities.AliceTodoist import AliceTodoist
 
 from modules.alicecontext.AliceContext import AliceContext
 from modules.alicestates.AuthState import AuthState
@@ -22,12 +23,16 @@ def main():
 
     alice_req = AliceRequest(request.json)
     
+    alice_todoist = None
+    if(alice_req.access_token):
+        alice_todoist = AliceTodoist(alice_req)
+
     state = get_current_state(alice_req)   
     logging.info(f"State: {state}")
 
     alice_resp = AliceResponse(alice_req, state)
     
-    alice_resp.get_application_state().handle_dialog(alice_resp, alice_req)
+    alice_resp.get_application_state().handle_dialog(alice_resp, alice_req, alice_todoist)
 
     logging.info(f"Resp: {alice_resp}")
     

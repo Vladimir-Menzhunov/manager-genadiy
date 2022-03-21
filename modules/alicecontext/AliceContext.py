@@ -2,6 +2,7 @@ import logging
 
 from entities.AliceRequest import AliceRequest
 from entities.AliceResponse import AliceResponse
+from entities.AliceTodoist import AliceTodoist
 
 EXIT_WORDS = {'выход', 'пока', 'выйти', 'уйти', 'покинуть'}
 YES_WORDS = {'да', 'конечно', 'ок', 'хорошо', 'погнали'}
@@ -24,9 +25,8 @@ class AliceContext:
         self._state = state
         self._state.context = self
 
-    def handle_dialog(self, res: AliceResponse, req: AliceRequest):
-        self._state.handle_dialog(res, req)
-
+    def handle_dialog(self, res: AliceResponse, req: AliceRequest, todoist):
+        self._state.handle_dialog(res, req, todoist)
 
     def __str__(self) -> str:
         return str(self._state)

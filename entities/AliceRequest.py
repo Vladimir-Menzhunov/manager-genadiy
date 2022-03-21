@@ -64,6 +64,10 @@ class AliceRequest:
         return bool(self._request["request"]["nlu"]["intents"].get("TASK.LIST"))
 
     @property
+    def project_list(self) -> bool:
+        return bool(self._request["request"]["nlu"]["intents"].get("PROJECT.LIST"))
+
+    @property
     def access_token(self):
         return self.session["user"].get("access_token")
 

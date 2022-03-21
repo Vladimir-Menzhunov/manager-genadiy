@@ -20,7 +20,7 @@ class AliceState(ABC):
         self._context = context
 
     @abstractmethod
-    def handle_dialog(self, res: AliceResponse, req: AliceRequest):
+    def handle_dialog(self, res: AliceResponse, req: AliceRequest, todoist):
         pass
 
     @abstractmethod
