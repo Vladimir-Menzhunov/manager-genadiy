@@ -4,8 +4,9 @@ from entities.AliceRequest import AliceRequest
 from entities.AliceResponse import AliceResponse
 
 EXIT_WORDS = {'выход', 'пока', 'выйти', 'уйти', 'покинуть'}
+YES_WORDS = {'да', 'конечно', 'ок', 'хорошо', 'погнали'}
 
-class Context:
+class AliceContext:
     """Класс Context предназначен для управления состояниями навыка Алисы.
     ---------------------------------------------------------------------
     Методы
@@ -25,3 +26,10 @@ class Context:
 
     def handle_dialog(self, res: AliceResponse, req: AliceRequest):
         self._state.handle_dialog(res, req)
+
+
+    def __str__(self) -> str:
+        return str(self._state)
+
+    def __repr__(self) -> str:
+        return str(self._state)

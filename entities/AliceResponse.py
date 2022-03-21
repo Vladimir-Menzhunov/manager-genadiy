@@ -1,5 +1,7 @@
-from email.mime import application
 import json
+
+from flask import session
+
 from entities.AliceRequest import AliceRequest
 
 class AliceResponse:
@@ -16,26 +18,36 @@ class AliceResponse:
         set_image() - прикрепляет картинку к ответу.
     """
 
-    def __init__(self, request: AliceRequest):
+    def __init__(self, request: AliceRequest, state):
         """Конструктор класса принимает аргумента класса AliceRequest для установки версии и сессии
         для ответа."""
-        application_state = {}
-        if request.state:
-            application_state = request.state_application
+        
         self._response = {
+            "application_state": request.state_application,
             "version": request.version,
             "session": request.session,
             "response": {"end_session": False},
-            "application_state": application_state,
         }
+        
+        self.set_current_state(request.user_id, state)
+
+    def set_auth(self):
+        del self._response["response"]
+        self._response["start_account_linking"] = {}
 
     def set_answer(self, answer):
         self._response["response"]["text"] = answer
 
     def end_session(self):
+        user_id = self._response["session"]["user_id"]
+        self._response["application_state"][user_id] = "HelloState"
         self._response["response"]["end_session"] = True
 
     def to_json(self):
+        user_id = self._response["session"]["user_id"]
+        
+        self._response["application_state"][user_id] = str(self._response["application_state"][user_id])
+
         return json.dumps(self._response)
 
     def set_suggests(self, suggests):
@@ -49,3 +61,16 @@ class AliceResponse:
 
     def __repr__(self):
         return self.to_json()
+
+    def set_current_state(self, user_id, state):
+        self._response["application_state"][user_id] = state
+
+    def set_str_state(self, state):
+        user_id = self._response["session"]["user_id"]
+        self._response["application_state"][user_id] = state
+
+    def get_application_state(self):
+        user_id = self._response["session"]["user_id"]
+        return self._response["application_state"].get(user_id)
+
+        

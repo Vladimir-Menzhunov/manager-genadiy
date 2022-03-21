@@ -1,6 +1,5 @@
 import json
 
-
 class AliceRequest:
     """Класс AliceRequest предназначен для реализации удобного интерфейса
     взаимодействия с запросом Алисы.
@@ -40,9 +39,29 @@ class AliceRequest:
                 entities.append(entity["value"])
         return entities
 
+    def __get_intent(self, intent_type) -> list:
+        """Функця для получения определенных интентов в зависимости от аргумента функции.
+        -----------------------------------------------------------------------------------
+        intent_type - тип интента, который нужно получить
+        Типы интентов:
+            
+        ----------------------------------------------------------------------------------------
+        Возвращает список интентов, у которых тип совпадает с заданным, или пустой список, если
+        таких интентов не найдено."""
+        intents = []
+        
+        # for intent in self._request["request"]["nlu"]["intents"]:
+        #     if intent["type"] == intent_type:
+        #         intents.append(intent["value"])
+        return intents
+
     @property
     def user_id(self) -> str:
         return self.session["user_id"]
+
+    @property
+    def task_list(self) -> bool:
+        return bool(self._request["request"]["nlu"]["intents"].get("TASK.LIST"))
 
     @property
     def access_token(self):

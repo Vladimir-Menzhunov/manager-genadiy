@@ -1,10 +1,9 @@
 from abc import ABC, abstractmethod
 from entities.AliceRequest import AliceRequest
 from entities.AliceResponse import AliceResponse
+from modules.alicecontext.AliceContext import AliceContext
 
-from modules.context.Context import Context
-
-class State(ABC):
+class AliceState(ABC):
     """Базовый абстрактный класс состояния.
      --------------------------------------
      Методы
@@ -13,13 +12,21 @@ class State(ABC):
         с пользователем"""
 
     @property
-    def context(self) -> Context:
+    def context(self) -> AliceContext:
         return self._context
 
     @context.setter
-    def context(self, context: Context) -> None:
+    def context(self, context: AliceContext) -> None:
         self._context = context
 
     @abstractmethod
     def handle_dialog(self, res: AliceResponse, req: AliceRequest):
+        pass
+
+    @abstractmethod
+    def __str__(self):
+        pass
+
+    @abstractmethod
+    def __repr__(self):
         pass
