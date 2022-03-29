@@ -38,6 +38,9 @@ class AliceResponse:
     def set_answer(self, answer):
         self._response["response"]["text"] = answer
 
+    def set_say_answer(self, answer):
+        self._response["response"]["tts"] = answer
+
     def end_session(self):
         user_id = self._response["session"]["user_id"]
         self._response["application_state"][user_id] = "HelloState"

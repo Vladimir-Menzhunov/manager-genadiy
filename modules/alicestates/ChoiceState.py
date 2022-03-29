@@ -15,7 +15,9 @@ class ChoiceState(AliceState):
             res.set_answer('Просмотр списка задач!')
             return
         elif req.project_list:
-            res.set_answer(todoist.get_list_project_name())
+            project_list = todoist.get_list_project_name()
+            res.set_say_answer("У вас {} проектов".format(project_list.len))
+            res.set_answer(project_list.projects)
         else:
             res.set_answer("Я так не умею, вы можете посмотреть на список проектов или задач на сегодня")
         

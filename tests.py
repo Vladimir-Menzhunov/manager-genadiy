@@ -2,8 +2,8 @@ import unittest
 
 from entities.AliceRequest import AliceRequest
 from entities.AliceResponse import AliceResponse
+from entities.AliceTodoist import AliceTodoist
 from main import get_current_state
-from modules.alicecontext.AliceContext import AliceContext
 from modules.alicestates.AliceState import AliceState
 from modules.alicestates.ChoiceState import ChoiceState
 from modules.alicestates.HelloState import HelloState
@@ -148,7 +148,10 @@ class AliceResponceTest(unittest.TestCase):
             str(aliceRes._response["application_state"][user_id]), "HelloState")
         self.assertTrue(isinstance(
             aliceRes._response["application_state"][user_id]._state, HelloState))
-        aliceRes.get_application_state().handle_dialog(aliceRes, aliceReq)
+        alice_todoist = None
+        if(aliceReq.access_token):
+            alice_todoist = AliceTodoist(aliceReq)
+        aliceRes.get_application_state().handle_dialog(aliceRes, aliceReq, alice_todoist)
         self.assertTrue(isinstance(
             aliceRes._response["application_state"][user_id]._state, ChoiceState))
 
