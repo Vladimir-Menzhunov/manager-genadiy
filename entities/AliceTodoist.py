@@ -7,6 +7,11 @@ class Projects:
         self.projects = projects
         self.len = len
 
+class Tasks:
+    def __init__(self, tasks, len):
+        self.tasks = tasks
+        self.len = len
+
 class AliceTodoist:
     """Класс AliceTodoist предназначен для реализации удобного интерфейса взаимодействия
     с Todoist.
@@ -29,4 +34,23 @@ class AliceTodoist:
         for project in projects:
             projects_names += "{} - {}\n".format(count, project.name)
             count += 1
-        return Projects(projects_names, len(projects))
+        return Projects(projects_names, count)
+
+    def get_list_task_name_by_project_and_time(self, project = None, time = None):
+        listTask = []
+        if project and time:
+            print("project time")
+        elif project:
+            print("project")
+        elif time: 
+            print("time")
+        else:
+            listTask = self.todoist.get_tasks(filter = "today")
+
+        tasks_names = ""
+        count = 1
+        for task in listTask:
+            tasks_names += "{} - {}\n".format(count, task.content)
+            count += 1
+        return Tasks(tasks_names, count)
+

@@ -11,13 +11,14 @@ class ChoiceState(AliceState):
             res.end_session()
             return
         elif req.task_list: 
-            #TODO список задач
-            res.set_answer('Просмотр списка задач!')
+            task_entity = todoist.get_list_task_name_by_project_and_time()
+            res.set_say_answer("У вас {} задач".format(task_entity.len))
+            res.set_answer(task_entity.tasks)
             return
         elif req.project_list:
-            project_list = todoist.get_list_project_name()
-            res.set_say_answer("У вас {} проектов".format(project_list.len))
-            res.set_answer(project_list.projects)
+            project_entity = todoist.get_list_project_name()
+            res.set_say_answer("У вас {} проектов".format(project_entity.len))
+            res.set_answer(project_entity.projects)
         else:
             res.set_answer("Я так не умею, вы можете посмотреть на список проектов или задач на сегодня")
         
