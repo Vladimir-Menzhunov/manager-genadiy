@@ -114,7 +114,7 @@ class AliceRequestTest(unittest.TestCase):
         self.assertEqual(aliceReq.access_token, None)
 
         aliceReq = AliceRequest(reqAuthWithoutState)
-        self.assertEqual(aliceReq.access_token, "Hello")
+        self.assertEqual(aliceReq.access_token, "5c18c67296103ec880d256e7411687246badbe21")
 
         self.assertEqual(reqAuthWithoutState["state"]["application"].get(aliceReq.user_id), None)
 
