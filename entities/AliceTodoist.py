@@ -60,7 +60,7 @@ class AliceTodoist:
             if(got_project_id):
                 listTask = self.todoist.get_tasks(project_id = got_project_id)
             else:
-                return Tasks("У вас нет такого проекта.", -1)
+                return Tasks("У вас нет такого проекта. Создать проект?", -1)
         elif time: 
             print("time")
         else:
@@ -71,7 +71,13 @@ class AliceTodoist:
         if(listTask):
             count = 1
             for task in listTask:
-                tasks_names += "{} - {}\n".format(count, task.content)
+                content = ""
+                if(len(task.content) > 20):
+                    content = f"{task.content[:20]}..."
+                else:
+                    content = task.content
+
+                tasks_names += "{} - {}\n".format(count, content)
                 count += 1
         else:
             tasks_names = "Задач нет!"

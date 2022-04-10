@@ -17,9 +17,12 @@ class ChoiceState(AliceState):
             task_entity = todoist.get_list_task_name_by_project_and_time(project_name = project_name)
             if(task_entity.len != 0):
                 res.set_say_answer("У вас {} задач".format(task_entity.len))
-                res.set_answer(task_entity.tasks)
+                if(len(task_entity.tasks) > 1024):
+                    res.set_answer(f"{task_entity.tasks[:1024]}...")
+                else:
+                    res.set_answer(task_entity.tasks)
             elif task_entity.len == -1: 
-                res.set_answer(task_entity.tasks + " Создать проект?")
+                res.set_answer(task_entity.tasks)
                 res.set_suggests([
                     {'title': 'Выйти', 'hide': True},
                     {'title': 'Создай проект Отдых', 'hide': True},
