@@ -27,10 +27,12 @@ class ChoiceState(AliceState):
         else: 
             res.set_answer("Я так не умею, можешь воспользоваться примерами из подсказок =)")
             res.set_suggests([
-            {'title': 'Список задач', 'hide': True},
-            {'title': 'Задачи в покупках', 'hide': True},
-            {'title': 'Список проектов', 'hide': True},
-        ])
+                {'title': 'Выйти', 'hide': True},
+                {'title': 'Список задач', 'hide': True},
+                {'title': 'Задачи в покупках', 'hide': True},
+                {'title': 'Список проектов', 'hide': True},
+            ])
+            return
         
         res.set_suggests([
             {'title': 'Выйти', 'hide': True},
