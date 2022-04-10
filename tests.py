@@ -172,7 +172,10 @@ class TestForOtherFunction(unittest.TestCase):
 
 class TestSklern(unittest.TestCase):
     def test_sklern_cosine_compare(self):
-        self.assertTrue(cosine_compare("Английский", "Английский") == 1.)
+
+        print(cosine_compare("Английский язык", "английском"))
+        print(cosine_compare("Работа", "работе"))
+        self.assertTrue(cosine_compare("Английский язык", "Английский") == 1.)
         self.assertTrue(cosine_compare("Английский", "ggggggg") == 0.)
 
 class TestTodoist(unittest.TestCase):
