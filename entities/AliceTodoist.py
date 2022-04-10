@@ -58,7 +58,7 @@ class AliceTodoist:
         elif project_name:
             got_project_id = self.get_project_id_by_name(project_name)
 
-            listTask = self.todoist.get_tasks(project_id = got_project_id)
+            listTask = self.todoist.get_tasks(project_id = got_project_id, filter = "today")
         elif time: 
             print("time")
         else:
