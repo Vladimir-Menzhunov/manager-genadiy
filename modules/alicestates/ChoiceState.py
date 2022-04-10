@@ -15,8 +15,16 @@ class ChoiceState(AliceState):
             project_name = req.get_project_name_for_task
             logging.info(f"project_name_for_task: {project_name}")
             task_entity = todoist.get_list_task_name_by_project_and_time(project_name = project_name)
-            res.set_say_answer("У вас {} задач".format(task_entity.len))
-            res.set_answer(task_entity.tasks)
+            if(task_entity.len != 0):
+                res.set_say_answer("У вас {} задач".format(task_entity.len))
+                res.set_answer(task_entity.tasks)
+            else: 
+                res.set_answer("У вас нет задач, не хотелы бы создать задачу?")
+                res.set_suggests([
+                    {'title': 'Выйти', 'hide': True},
+                    {'title': 'Добавь рыбу в покупки', 'hide': True},
+                    {'title': 'Добавь занятие английским каждый день по 1 часу', 'hide': True},
+                ])
             return
         elif req.project_list:
             project_entity = todoist.get_list_project_name()

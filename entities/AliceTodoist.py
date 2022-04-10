@@ -57,17 +57,21 @@ class AliceTodoist:
             print("project time")
         elif project_name:
             got_project_id = self.get_project_id_by_name(project_name)
-
-            listTask = self.todoist.get_tasks(project_id = got_project_id, filter = "today")
+            if(got_project_id):
+                listTask = self.todoist.get_tasks(project_id = got_project_id)
         elif time: 
             print("time")
         else:
             listTask = self.todoist.get_tasks(filter = "today")
 
         tasks_names = ""
-        count = 1
-        for task in listTask:
-            tasks_names += "{} - {}\n".format(count, task.content)
-            count += 1
+        count = 0
+        if(listTask):
+            count = 1
+            for task in listTask:
+                tasks_names += "{} - {}\n".format(count, task.content)
+                count += 1
+        else:
+            tasks_names = "Задач нет!"
         return Tasks(tasks_names, count)
 
