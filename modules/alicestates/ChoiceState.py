@@ -22,10 +22,19 @@ class ChoiceState(AliceState):
             project_entity = todoist.get_list_project_name()
             res.set_say_answer("У вас {} проектов".format(project_entity.len))
             res.set_answer(project_entity.projects)
-        else:
-            res.set_answer("Я так не умею, вы можете посмотреть на список проектов или задач на сегодня")
+        elif len(req.words) == 0:
+            res.set_answer("Рад тебя снова видеть братишка! Что спланируем сегодня?")
+        else: 
+            res.set_answer("Я так не умею, можешь воспользоваться примерами из подсказок =)")
+            res.set_suggests([
+            {'title': 'Список задач', 'hide': True},
+            {'title': 'Задачи в покупках', 'hide': True},
+            {'title': 'Список проектов', 'hide': True},
+        ])
         
-        res.set_suggests([{'title': 'Выйти', 'hide': True}])
+        res.set_suggests([
+            {'title': 'Выйти', 'hide': True},
+        ])
 
     def __str__(self):
         return "ChoiceState"
