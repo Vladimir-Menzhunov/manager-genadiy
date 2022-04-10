@@ -64,6 +64,13 @@ class AliceRequest:
         return bool(self._request["request"]["nlu"]["intents"].get("TASK.LIST"))
 
     @property
+    def get_project_name_for_task(self):
+        project_name = None
+        if(self._request["request"]["nlu"]["intents"]["TASK.LIST"]["slots"].get("for")):
+            project_name = self._request["request"]["nlu"]["intents"]["TASK.LIST"]["slots"]["for"]["value"]
+        return project_name
+
+    @property
     def project_list(self) -> bool:
         return bool(self._request["request"]["nlu"]["intents"].get("PROJECT.LIST"))
 

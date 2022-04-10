@@ -1,3 +1,4 @@
+import logging
 from entities.AliceRequest import AliceRequest
 from entities.AliceResponse import AliceResponse
 from entities.AliceTodoist import AliceTodoist
@@ -11,7 +12,9 @@ class ChoiceState(AliceState):
             res.end_session()
             return
         elif req.task_list: 
-            task_entity = todoist.get_list_task_name_by_project_and_time()
+            project_name = req.get_project_name_for_task
+            logging.info(f"project_name_for_task: {project_name}")
+            task_entity = todoist.get_list_task_name_by_project_and_time(project_name = project_name)
             res.set_say_answer("У вас {} задач".format(task_entity.len))
             res.set_answer(task_entity.tasks)
             return

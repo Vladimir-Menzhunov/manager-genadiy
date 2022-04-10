@@ -1,4 +1,6 @@
+import logging
 from todoist_api_python.api import TodoistAPI
+from additionalfunction.compatefunc import cosine_compare
 
 from entities.AliceRequest import AliceRequest
 
@@ -36,12 +38,27 @@ class AliceTodoist:
             count += 1
         return Projects(projects_names, count)
 
-    def get_list_task_name_by_project_and_time(self, project = None, time = None):
+    def get_project_id_by_name(self, project_name: str):
+        projects = self.todoist.get_projects()
+        
+        for project in projects:
+            cosine = cosine_compare(project.name, project_name)
+            logging.info(f"cosine: {cosine}, projectTodoist: {project.name}, projectGot: {project_name}")
+            if(cosine > 0.81):
+                project_id = project.id
+                logging.info(f"project_id: {project_id}")
+                return project_id
+        return None
+        
+
+    def get_list_task_name_by_project_and_time(self, project_name = None, time = None):
         listTask = []
-        if project and time:
+        if project_name and time:
             print("project time")
-        elif project:
-            print("project")
+        elif project_name:
+            got_project_id = self.get_project_id_by_name(project_name)
+
+            listTask = self.todoist.get_tasks(project_id = got_project_id)
         elif time: 
             print("time")
         else:
