@@ -59,6 +59,8 @@ class AliceTodoist:
             got_project_id = self.get_project_id_by_name(project_name)
             if(got_project_id):
                 listTask = self.todoist.get_tasks(project_id = got_project_id)
+            else:
+                return Tasks("У вас нет такого проекта.", -1)
         elif time: 
             print("time")
         else:

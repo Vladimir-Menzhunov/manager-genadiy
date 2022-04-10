@@ -18,12 +18,19 @@ class ChoiceState(AliceState):
             if(task_entity.len != 0):
                 res.set_say_answer("У вас {} задач".format(task_entity.len))
                 res.set_answer(task_entity.tasks)
-            else: 
-                res.set_answer("У вас нет задач, не хотелы бы создать задачу?")
+            elif task_entity.len == -1: 
+                res.set_answer(task_entity.tasks + " Создать проект?")
+                res.set_suggests([
+                    {'title': 'Выйти', 'hide': True},
+                    {'title': 'Создай проект Отдых', 'hide': True},
+                    {'title': 'Создай проект Учеба', 'hide': True},
+                ])
+            else:
+                res.set_answer("У вас нет задач, создадим задачу?")
                 res.set_suggests([
                     {'title': 'Выйти', 'hide': True},
                     {'title': 'Добавь рыбу в покупки', 'hide': True},
-                    {'title': 'Добавь занятие английским каждый день по 1 часу', 'hide': True},
+                    {'title': 'Добавь практика языка в английский каждый день по 1 часу', 'hide': True},
                 ])
             return
         elif req.project_list:
