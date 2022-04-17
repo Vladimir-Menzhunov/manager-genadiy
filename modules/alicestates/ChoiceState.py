@@ -1,4 +1,6 @@
 import logging
+import re
+from additionalfunction.processing_contents import processing_task
 from entities.AliceRequest import AliceRequest
 from entities.AliceResponse import AliceResponse
 from entities.AliceTodoist import AliceTodoist
@@ -40,6 +42,34 @@ class ChoiceState(AliceState):
             project_entity = todoist.get_list_project_name()
             res.set_say_answer("У вас {} проектов".format(project_entity.len))
             res.set_answer(project_entity.projects)
+        elif req.reschedule_task:
+            project_name = req.get_project_name_for_reschedule
+            logging.info(f"project_name_for_task: {project_name}")
+
+            dayTime = 0
+            if len(req.dates) > 0:
+                dayTime = req.dates[0].get("day")
+            logging.info(f"dayTime: {dayTime}")
+            
+            rescheduled_tasks = todoist.reschedule_tasks(project_name = project_name, dayTime = dayTime)
+
+            if(rescheduled_tasks.len != 0):
+                res.set_say_answer("Мы перенесли {}".format(processing_task(rescheduled_tasks.len)))
+                if(len(rescheduled_tasks.tasks) > 777):
+                    res.set_answer(f"{rescheduled_tasks.tasks[:777]}...")
+                else:
+                    res.set_answer(rescheduled_tasks.tasks)
+            elif rescheduled_tasks.len == -1: 
+                res.set_answer(rescheduled_tasks.tasks)
+                res.set_suggests([
+                    {'title': 'Выйти', 'hide': True},
+                    {'title': 'Создай проект Отдых', 'hide': True},
+                    {'title': 'Создай проект Учеба', 'hide': True},
+                ])
+            else:
+                res.set_answer("У вас нет просроченных задач!")
+
+            return
         elif len(req.words) == 0:
             res.set_answer("Рад тебя снова видеть братишка! Что спланируем сегодня?")
         else: 

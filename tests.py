@@ -1,6 +1,8 @@
 import unittest
-from additionalfunction.compatefunc import cosine_compare
+from additionalfunction.TimeHelper import minusDaysDate, minusDaysDatetime, plusDaysDate, plusDaysDatetime
+from additionalfunction.comparefunc import cosine_compare
 from todoist_api_python.api import TodoistAPI
+from additionalfunction.processing_contents import processing_task
 from entities.AliceRequest import AliceRequest
 from entities.AliceResponse import AliceResponse
 from entities.AliceTodoist import AliceTodoist
@@ -104,6 +106,85 @@ reqAuthWithoutState = {
     "version": "1.0"
 }
 
+requestWithDates = {
+  "meta": {
+    "locale": "ru-RU",
+    "timezone": "UTC",
+    "client_id": "ru.yandex.searchplugin/7.16 (none none; android 4.4.2)",
+    "interfaces": {
+      "screen": {},
+      "payments": {},
+      "account_linking": {}
+    }
+  },
+  "session": {
+    "message_id": 21,
+    "session_id": "667941e8-48a6-4328-bdd9-3fe259fe284e",
+    "skill_id": "2d9ef5db-7b49-45f6-94bd-1152cb0ca9eb",
+    "user": {
+      "user_id": "748E450E1C6B760F4DF2F0FAB4792A4A0FC2D285B2E4A7989E23B8942AF8E5B5",
+      "access_token": "48f85b6a0c1d2727ea813412f7af844c6d7a331c"
+    },
+    "application": {
+      "application_id": "CC11972A3499029C5A37AD8EACAD223466CC784E59DFA4B687087E93C820280A"
+    },
+    "user_id": "CC11972A3499029C5A37AD8EACAD223466CC784E59DFA4B687087E93C820280A",
+    "new": False
+  },
+  "request": {
+    "command": "перенос просроченных задач на завтра",
+    "original_utterance": "перенос просроченных задач на завтра ",
+    "nlu": {
+      "tokens": [
+        "перенос",
+        "просроченных",
+        "задач",
+        "на",
+        "завтра"
+      ],
+      "entities": [
+        {
+          "type": "YANDEX.DATETIME",
+          "tokens": {
+            "start": 3,
+            "end": 5
+          },
+          "value": {
+            "day": 1,
+            "day_is_relative": True
+          }
+        }
+      ],
+      "intents": {
+        "RESCHEDULE.TASK": {
+          "slots": {
+            "type": {
+              "type": "YANDEX.STRING",
+              "tokens": {
+                "start": 2,
+                "end": 3
+              },
+              "value": "задач"
+            }
+          }
+        }
+      }
+    },
+    "markup": {
+      "dangerous_context": False
+    },
+    "type": "SimpleUtterance"
+  },
+  "state": {
+    "session": {},
+    "user": {},
+    "application": {
+      "CC11972A3499029C5A37AD8EACAD223466CC784E59DFA4B687087E93C820280A": "ChoiceState"
+    }
+  },
+  "version": "1.0"
+}
+
 """
     Все объекты изменяемы, поэтому лучше новый набор данных для каждого AliceRequest и AliceResponse
 """
@@ -175,7 +256,7 @@ class TestSklern(unittest.TestCase):
 
         print(cosine_compare("Английский язык", "английском"))
         print(cosine_compare("Работа", "работе"))
-        self.assertTrue(cosine_compare("Английский язык", "Английский") == 1.)
+        self.assertTrue(cosine_compare("Английский язык", "Английский") >= 0.88642)
         self.assertTrue(cosine_compare("Английский", "ggggggg") == 0.)
 
 class TestTodoist(unittest.TestCase):
@@ -184,6 +265,42 @@ class TestTodoist(unittest.TestCase):
         print(app.get_projects())
         self.assertTrue(1 == 1)
 
+class TestDueDatetime(unittest.TestCase):
+    def test_correct_datetime(self):
+        date_string = "2011-11-04T00:05:23"
+        days = 1
+        date = "2011-11-04"
+
+        self.assertEqual(plusDaysDatetime(date_string, 1), "2011-11-05T00:05:23Z")
+        self.assertEqual(minusDaysDatetime(date_string, 1), "2011-11-03T00:05:23Z")
+        self.assertEqual(plusDaysDate(date, 1), "2011-11-05")
+        self.assertEqual(minusDaysDate(date, 1), "2011-11-03")
+        
+        
+        req = AliceRequest(reqAuthWithoutState)
+        todoist = AliceTodoist(req)
+        rescheduled_tasks = todoist.reschedule_tasks()
+        #tasks = todoist.todoist.get_tasks(filter = "overdue")
+        
+        print("Мы перенесли {}".format(processing_task(rescheduled_tasks.len)))
+        print(rescheduled_tasks.tasks)
+
+class TestProcessTask(unittest.TestCase):
+    def test_process_task(self):
+        count1 = 1
+        count2 = 2
+        count3 = 5
+
+        self.assertEqual(processing_task(count1), "1 задача")
+        self.assertEqual(processing_task(count2), "2 задачи")
+        self.assertEqual(processing_task(count3), "5 задач")
+
+class TestDates(unittest.TestCase):
+    def test_dates(self):
+        req = AliceRequest(requestWithDates)
+        self.assertEqual(req.dates[0]["day"], 1)
+        
+
 if __name__ == '__main__':
     unittest.main()
-# python -m unittest tests.TestSklern.test_sklern_cosine_compare 
+# python3 -m unittest tests.TestDates.test_dates 

@@ -70,9 +70,21 @@ class AliceRequest:
             project_name = self._request["request"]["nlu"]["intents"]["TASK.LIST"]["slots"]["for"]["value"]
         return project_name
 
+
+    @property
+    def get_project_name_for_reschedule(self):
+        project_name = None
+        if(self._request["request"]["nlu"]["intents"]["RESCHEDULE.TASK"]["slots"].get("project")):
+            project_name = self._request["request"]["nlu"]["intents"]["RESCHEDULE.TASK"]["slots"]["project"]["value"]
+        return project_name
+
     @property
     def project_list(self) -> bool:
         return bool(self._request["request"]["nlu"]["intents"].get("PROJECT.LIST"))
+
+    @property
+    def reschedule_task(self) -> bool:
+        return bool(self._request["request"]["nlu"]["intents"].get("RESCHEDULE.TASK"))
 
     @property
     def access_token(self):
