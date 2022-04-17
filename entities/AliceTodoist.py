@@ -1,8 +1,14 @@
+import json
 import logging
 from todoist_api_python.api import TodoistAPI
-from additionalfunction.compatefunc import cosine_compare
+from additionalfunction.TimeHelper import plusDaysDate, plusDaysDatetime, todayDate, todayDatetime
+from additionalfunction.comparefunc import cosine_compare
 import operator
 from entities.AliceRequest import AliceRequest
+import requests
+from todoist_api_python.models import Task
+import uuid
+from threading import Thread
 
 class Projects:
     def __init__(self, projects, len):
@@ -14,6 +20,23 @@ class Tasks:
         self.tasks = tasks
         self.len = len
 
+def build_task_entity(task_list):
+    count = 0
+    tasks_names = ""
+    if(task_list):
+        for task in task_list:
+            content = ""
+            if(len(task.content) > 20):
+                content = f"{task.content[:20]}..."
+            else:
+                content = task.content
+
+            count += 1
+            tasks_names += "{} - {}\n".format(count, content)
+    else:
+        tasks_names = "Задач нет!"
+    return Tasks(tasks_names, count)
+
 class AliceTodoist:
     """Класс AliceTodoist предназначен для реализации удобного интерфейса взаимодействия
     с Todoist.
@@ -22,6 +45,8 @@ class AliceTodoist:
     -------------------------------------------------------------------------------------
     Методы
         get_list_project_name - получение проектов в виде строки и длинны
+        get_project_id_by_name - получение id проекта по имени
+        get_list_task_name_by_project_and_time - получение задач по проекту и времени
     """
 
     def __init__(self, request: AliceRequest):
@@ -46,12 +71,11 @@ class AliceTodoist:
         project_cosine = max(projectid_cosine_dict.items(), key=operator.itemgetter(1))
         
         logging.info(f"cosine: {project_cosine[1]}, projectTodoist: {project_cosine[0]}, projectGot: {project_name}")
-        if(project_cosine[1] < 0.7):
+        if(project_cosine[1] < 0.72):
             return None
 
         logging.info(f"project_id: {project_cosine[0]}")
         return project_cosine[0]
-        
 
     def get_list_task_name_by_project_and_time(self, project_name = None, time = None):
         listTask = []
@@ -68,20 +92,63 @@ class AliceTodoist:
         else:
             listTask = self.todoist.get_tasks(filter = "today")
 
-        tasks_names = ""
-        count = 0
-        if(listTask):
-            count = 1
-            for task in listTask:
-                content = ""
-                if(len(task.content) > 20):
-                    content = f"{task.content[:20]}..."
-                else:
-                    content = task.content
+        return build_task_entity(listTask)
 
-                tasks_names += "{} - {}\n".format(count, content)
-                count += 1
+    def reschedule_tasks(self, project_name = None, dayTime = 0):
+        listTask = []
+        if project_name:
+            got_project_id = self.get_project_id_by_name(project_name)
+            if(got_project_id):
+                listTask = self.todoist.get_tasks(project_id = got_project_id, filter="overdue")
+            else:
+                return Tasks("У вас нет такого проекта. Создать проект?", -1)
         else:
-            tasks_names = "Задач нет!"
-        return Tasks(tasks_names, count)
+            listTask = self.todoist.get_tasks(filter = "overdue")
 
+        proc = Thread(target = self.update_task, args = (listTask, dayTime,))
+        proc.start()
+
+        return build_task_entity(listTask)
+
+    def update_task(self, tasks: list[Task], timeCount):
+        token = self.todoist._token
+        headers = {
+            'Authorization': 'Bearer {}'.format(token),
+            'Content-Type': 'application/x-www-form-urlencoded',
+        }
+
+        commands = []
+
+        for task in tasks:
+            #logging.info(f"task.id - {task.id}, task.due.datetime - {task.due.datetime}, task.due.date - {task.due.date}")
+            date = task.due.datetime
+            if date:
+                if timeCount == 0:
+                    date = todayDatetime(date)
+                else:
+                    date = plusDaysDatetime(date, timeCount)
+            else: 
+                date = task.due.date
+                if timeCount == 0:
+                    date = todayDate(date)
+                else:
+                    date = plusDaysDate(date, timeCount)
+            
+            commands.append({
+                    "type": "item_update", 
+                    "uuid": str(uuid.uuid4()),
+                    "args": {
+                        "id": task.id, 
+                        "due": {
+                            "date": date,
+                            "timezone": task.due.timezone,
+                            "string": task.due.string,
+                            "lang": "en",
+                            "is_recurring": task.due.recurring,
+                        },
+                    }
+                })
+        
+        data = 'commands=' + json.dumps(commands)
+        requests.post('https://api.todoist.com/sync/v8/sync', headers=headers, data=data)
+        
