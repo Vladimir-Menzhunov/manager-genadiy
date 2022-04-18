@@ -1,7 +1,7 @@
 import json
 import logging
 from todoist_api_python.api import TodoistAPI
-from additionalfunction.TimeHelper import plusDaysDate, plusDaysDatetime, todayDate, todayDatetime
+from additionalfunction.TimeHelper import getTimeDatetime, plusDaysDate, plusDaysDatetime, todayDate, todayDatetime
 from additionalfunction.comparefunc import cosine_compare
 import operator
 from entities.AliceRequest import AliceRequest
@@ -20,16 +20,20 @@ class Tasks:
         self.tasks = tasks
         self.len = len
 
-def build_task_entity(task_list):
+def build_task_entity(task_list: list[Task]):
     count = 0
     tasks_names = ""
     if(task_list):
         for task in task_list:
             content = ""
+            
             if(len(task.content) > 20):
                 content = f"{task.content[:20]}..."
             else:
                 content = task.content
+
+            if task.due.datetime:
+                content += f" | {getTimeDatetime(task.due.datetime)}"
 
             count += 1
             tasks_names += "{} - {}\n".format(count, content)
@@ -47,6 +51,7 @@ class AliceTodoist:
         get_list_project_name - получение проектов в виде строки и длинны
         get_project_id_by_name - получение id проекта по имени
         get_list_task_name_by_project_and_time - получение задач по проекту и времени
+        reschedule_tasks - перенос задач по проекту и времени
     """
 
     def __init__(self, request: AliceRequest):
