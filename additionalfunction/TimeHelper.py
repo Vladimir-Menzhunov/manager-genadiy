@@ -41,3 +41,13 @@ def minusDaysDate(date_string, days):
     #logging.info(f"plusDaysDate({date_string}, {days})")
     return (date.fromisoformat(date_from_today) - timedelta(days=int(days))).isoformat()
 
+def getTimeDatetime(date_string) -> str:
+    date_string_without_z = removeZ(date_string)
+    date_task = datetime.fromisoformat(date_string_without_z)
+    hourRussia = f"{date_task.hour + 3}"
+    minute = date_task.minute
+    if date_task.minute <= 9:
+        minute = f"0{date_task.minute}"
+    
+    result = f"{hourRussia}:{minute}"
+    return result
