@@ -58,8 +58,8 @@ def getTimeZone():
 
 def getTime(date_string):
     date_task = datetime.now() + timedelta(days=1)
-    if(date_string):
-        date_string_without_z = removeZ(date_string)
+    if(date_string and date_string.datetime):
+        date_string_without_z = removeZ(date_string.datetime)
         date_task = datetime.fromisoformat(date_string_without_z) + timedelta(hours=3)
 
     return date_task

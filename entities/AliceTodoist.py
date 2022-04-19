@@ -21,7 +21,7 @@ class Tasks:
         self.len = len
 
 def sort_key(t: Task):
-    time = getTime(t.due.datetime)
+    time = getTime(t.due)
     return time.timestamp()
 
 def build_task_entity(task_list: list[Task]):
