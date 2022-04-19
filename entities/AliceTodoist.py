@@ -1,7 +1,7 @@
 import json
 import logging
 from todoist_api_python.api import TodoistAPI
-from additionalfunction.TimeHelper import getTimeDatetime, plusDaysDate, plusDaysDatetime, todayDate, todayDatetime
+from additionalfunction.TimeHelper import getTime, getTimeDatetime, plusDaysDate, plusDaysDatetime, todayDate, todayDatetime
 from additionalfunction.comparefunc import cosine_compare
 import operator
 from entities.AliceRequest import AliceRequest
@@ -20,10 +20,15 @@ class Tasks:
         self.tasks = tasks
         self.len = len
 
+def sort_key(t: Task):
+    time = getTime(t.due.datetime)
+    return time.timestamp()
+
 def build_task_entity(task_list: list[Task]):
     count = 0
     tasks_names = ""
     if(task_list):
+        task_list = sorted(task_list, key=sort_key)
         for task in task_list:
             content = ""
             
@@ -32,7 +37,7 @@ def build_task_entity(task_list: list[Task]):
             else:
                 content = task.content
 
-            if task.due.datetime:
+            if task.due and task.due.datetime:
                 content += f" | {getTimeDatetime(task.due.datetime)}"
 
             count += 1

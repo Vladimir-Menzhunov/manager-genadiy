@@ -1,5 +1,6 @@
 import logging
 import re
+from additionalfunction.TimeHelper import getTimeZone
 from additionalfunction.processing_contents import processing_task
 from entities.AliceRequest import AliceRequest
 from entities.AliceResponse import AliceResponse
@@ -13,7 +14,8 @@ class ChoiceState(AliceState):
             res.set_answer('Пока!')
             res.end_session()
             return
-        elif req.task_list: 
+        elif req.task_list:
+            logging.info(f"getTimeZone: {getTimeZone()}")
             project_name = req.get_project_name_for_task
             logging.info(f"project_name_for_task: {project_name}")
             task_entity = todoist.get_list_task_name_by_project_and_time(project_name = project_name)
