@@ -1,5 +1,6 @@
+import logging
 import unittest
-from additionalfunction.TimeHelper import getTimeZone, minusDaysDate, minusDaysDatetime, plusDaysDate, plusDaysDatetime
+from additionalfunction.TimeHelper import getDueDate, getTimeZone, minusDaysDate, minusDaysDatetime, plusDaysDate, plusDaysDatetime
 from additionalfunction.comparefunc import cosine_compare
 from todoist_api_python.api import TodoistAPI
 from additionalfunction.processing_contents import processing_task
@@ -303,9 +304,17 @@ class TestDates(unittest.TestCase):
     def timezone(self):
 
         print(getTimeZone())
-        
 
+class TestCheckDueForTask(unittest.TestCase):
+    def checkDueTask(self):
+        req = AliceRequest(reqAuthWithoutState)
+        todoist = AliceTodoist(req)
+        list_tasks = todoist.get_list_tasks("today")
+        for task in list_tasks: 
+            logging.info(getDueDate(task))
+        
+        self.assertEqual(1, 1)
 
 if __name__ == '__main__':
     unittest.main()
-# python3 -m unittest tests.TestDates.timezone 
+# python3 -m unittest tests.TestCheckDueForTask.checkDueTask 

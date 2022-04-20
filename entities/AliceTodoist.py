@@ -103,6 +103,9 @@ class AliceTodoist:
             listTask = self.todoist.get_tasks(filter = "today")
 
         return build_task_entity(listTask)
+    
+    def get_list_tasks(self, filter = None):
+        return self.todoist.get_tasks(filter = filter)
 
     def reschedule_tasks(self, project_name = None, dayTime = 0):
         listTask = []

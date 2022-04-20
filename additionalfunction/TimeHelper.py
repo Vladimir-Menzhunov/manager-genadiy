@@ -1,6 +1,7 @@
+from asyncio import Task
 from datetime import timedelta, datetime, date
 import logging
-from sqlite3 import Timestamp
+from todoist_api_python.models import Task
 
 def removeZ(date_str: str) -> str:
     return date_str.replace("Z", "")
@@ -63,3 +64,9 @@ def getTime(date_string):
         date_task = datetime.fromisoformat(date_string_without_z) + timedelta(hours=3)
 
     return date_task
+
+def getDueDate(task: Task): 
+    due_str = "None"
+    if task.due:
+        due_str = f"Task - {task.id}, content - {task.content[:20]} ==== {task.due.__dict__} ++++"
+    return due_str
