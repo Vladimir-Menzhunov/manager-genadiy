@@ -1,7 +1,8 @@
-from asyncio import Task
 from datetime import timedelta, datetime, date
 import logging
-from todoist_api_python.models import Due
+from todoist_api_python.models import Due, Task
+
+from constants import LENGTH_CONTENT
 
 def removeZ(date_str: str) -> str:
     return date_str.replace("Z", "")
@@ -82,5 +83,5 @@ def getTime(dueDate: Due):
 def getDueDate(task: Task): 
     due_str = "None"
     if task.due:
-        due_str = f"Task - {task.id}, content - {task.content[:20]} ==== {task.due.__dict__} ++++"
+        due_str = f"Task - {task.id}, content - {task.content[:LENGTH_CONTENT]} ==== {task.due.__dict__} ++++"
     return due_str

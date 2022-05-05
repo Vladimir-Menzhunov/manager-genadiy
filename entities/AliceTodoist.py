@@ -4,6 +4,7 @@ from todoist_api_python.api import TodoistAPI
 from additionalfunction.TimeHelper import getTime, getTimeDatetime, plusDaysDate, plusDaysDatetime, todayDate, todayDatetime
 from additionalfunction.comparefunc import cosine_compare
 import operator
+from constants import LENGTH_CONTENT, LENGTH_TEXT
 from entities.AliceRequest import AliceRequest
 import requests
 from todoist_api_python.models import Task
@@ -32,8 +33,8 @@ def build_task_entity(task_list: list[Task]):
         for task in task_list:
             content = ""
             
-            if(len(task.content) > 20):
-                content = f"{task.content[:20]}..."
+            if(len(task.content) > LENGTH_CONTENT):
+                content = f"{task.content[:LENGTH_CONTENT]}..."
             else:
                 content = task.content
 
@@ -45,8 +46,8 @@ def build_task_entity(task_list: list[Task]):
     else:
         tasks_names = "Задач нет!"
 
-    if(len(tasks_names) > 888):
-        tasks_names = f"{tasks_names[:888]}..."
+    if(len(tasks_names) > LENGTH_TEXT):
+        tasks_names = f"{tasks_names[:LENGTH_TEXT]}..."
     
     return Tasks(tasks_names, count)
 
