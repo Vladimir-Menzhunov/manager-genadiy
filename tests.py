@@ -318,11 +318,11 @@ class TestCheckDueForTask(unittest.TestCase):
     def checkGetTime(self):
         req = AliceRequest(reqAuthWithoutState)
         todoist = AliceTodoist(req)
-        list_tasks = todoist.get_list_tasks("today")
+        list_tasks = todoist.get_list_tasks("overdue")
         logging.info(build_task_entity(list_tasks).__dict__)
         
         self.assertEqual(1, 1)
 
 if __name__ == '__main__':
     unittest.main()
-# python3 -m unittest tests.TestCheckDueForTask.checkGetTime 
+# python3 -m unittest tests.TestCheckDueForTask.checkDueTask 

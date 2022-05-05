@@ -142,9 +142,9 @@ class AliceTodoist:
             date = task.due.datetime
             if date:
                 if timeCount == 0:
-                    date = todayDatetime(date)
+                    date = todayDatetime(date, task.due.timezone)
                 else:
-                    date = plusDaysDatetime(date, timeCount)
+                    date = plusDaysDatetime(date, timeCount, task.due.timezone)
             else: 
                 date = task.due.date
                 if timeCount == 0:
@@ -159,8 +159,8 @@ class AliceTodoist:
                         "id": task.id, 
                         "due": {
                             "date": date,
-                            "timezone": task.due.timezone,
-                            "string": None,
+                            "timezone": 'Europe/Moscow',
+                            "string": task.due.string,
                             "lang": "en",
                             "is_recurring": task.due.recurring,
                         },
