@@ -1,11 +1,12 @@
+import logging
 import unittest
-from additionalfunction.TimeHelper import minusDaysDate, minusDaysDatetime, plusDaysDate, plusDaysDatetime
+from additionalfunction.TimeHelper import getDueDate, getTimeZone, minusDaysDate, minusDaysDatetime, plusDaysDate, plusDaysDatetime
 from additionalfunction.comparefunc import cosine_compare
 from todoist_api_python.api import TodoistAPI
 from additionalfunction.processing_contents import processing_task
 from entities.AliceRequest import AliceRequest
 from entities.AliceResponse import AliceResponse
-from entities.AliceTodoist import AliceTodoist
+from entities.AliceTodoist import AliceTodoist, build_task_entity
 from main import get_current_state
 from modules.alicestates.AliceState import AliceState
 from modules.alicestates.ChoiceState import ChoiceState
@@ -271,15 +272,15 @@ class TestDueDatetime(unittest.TestCase):
         days = 1
         date = "2011-11-04"
 
-        self.assertEqual(plusDaysDatetime(date_string, 1), "2011-11-05T00:05:23Z")
-        self.assertEqual(minusDaysDatetime(date_string, 1), "2011-11-03T00:05:23Z")
-        self.assertEqual(plusDaysDate(date, 1), "2011-11-05")
-        self.assertEqual(minusDaysDate(date, 1), "2011-11-03")
+        self.assertEqual(plusDaysDatetime(date_string, 1), "2022-04-19T21:05:23Z")
+        self.assertEqual(minusDaysDatetime(date_string, 1), "2022-04-17T21:05:23Z")
+        self.assertEqual(plusDaysDate(date, 1), "2022-04-20")
+        self.assertEqual(minusDaysDate(date, 1), "2022-04-18")
         
         
         req = AliceRequest(reqAuthWithoutState)
         todoist = AliceTodoist(req)
-        rescheduled_tasks = todoist.reschedule_tasks()
+        rescheduled_tasks = todoist.get_list_task_name_by_project_and_time() #.reschedule_tasks()
         #tasks = todoist.todoist.get_tasks(filter = "overdue")
         
         print("Мы перенесли {}".format(processing_task(rescheduled_tasks.len)))
@@ -299,8 +300,29 @@ class TestDates(unittest.TestCase):
     def test_dates(self):
         req = AliceRequest(requestWithDates)
         self.assertEqual(req.dates[0]["day"], 1)
+
+    def timezone(self):
+
+        print(getTimeZone())
+
+class TestCheckDueForTask(unittest.TestCase):
+    def checkDueTask(self):
+        req = AliceRequest(reqAuthWithoutState)
+        todoist = AliceTodoist(req)
+        list_tasks = todoist.get_list_tasks("today")
+        for task in list_tasks: 
+            logging.info(getDueDate(task))
         
+        self.assertEqual(1, 1)
+
+    def checkGetTime(self):
+        req = AliceRequest(reqAuthWithoutState)
+        todoist = AliceTodoist(req)
+        list_tasks = todoist.get_list_tasks("overdue")
+        logging.info(build_task_entity(list_tasks).__dict__)
+        
+        self.assertEqual(1, 1)
 
 if __name__ == '__main__':
     unittest.main()
-# python3 -m unittest tests.TestDates.test_dates 
+# python3 -m unittest tests.TestCheckDueForTask.checkDueTask 

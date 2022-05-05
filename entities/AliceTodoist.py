@@ -1,9 +1,10 @@
 import json
 import logging
 from todoist_api_python.api import TodoistAPI
-from additionalfunction.TimeHelper import getTimeDatetime, plusDaysDate, plusDaysDatetime, todayDate, todayDatetime
+from additionalfunction.TimeHelper import getTime, getTimeDatetime, plusDaysDate, plusDaysDatetime, todayDate, todayDatetime
 from additionalfunction.comparefunc import cosine_compare
 import operator
+from constants import LENGTH_CONTENT, LENGTH_TEXT
 from entities.AliceRequest import AliceRequest
 import requests
 from todoist_api_python.models import Task
@@ -20,25 +21,34 @@ class Tasks:
         self.tasks = tasks
         self.len = len
 
+def sort_key(t: Task):
+    time = getTime(t.due)
+    return time.timestamp()
+
 def build_task_entity(task_list: list[Task]):
     count = 0
     tasks_names = ""
     if(task_list):
+        task_list = sorted(task_list, key=sort_key)
         for task in task_list:
             content = ""
             
-            if(len(task.content) > 20):
-                content = f"{task.content[:20]}..."
+            if(len(task.content) > LENGTH_CONTENT):
+                content = f"{task.content[:LENGTH_CONTENT]}..."
             else:
                 content = task.content
 
-            if task.due.datetime:
-                content += f" | {getTimeDatetime(task.due.datetime)}"
+            if task.due:
+                content += f" | {getTimeDatetime(task.due)}"
 
             count += 1
             tasks_names += "{} - {}\n".format(count, content)
     else:
         tasks_names = "Задач нет!"
+
+    if(len(tasks_names) > LENGTH_TEXT):
+        tasks_names = f"{tasks_names[:LENGTH_TEXT]}..."
+    
     return Tasks(tasks_names, count)
 
 class AliceTodoist:
@@ -98,6 +108,9 @@ class AliceTodoist:
             listTask = self.todoist.get_tasks(filter = "today")
 
         return build_task_entity(listTask)
+    
+    def get_list_tasks(self, filter = None):
+        return self.todoist.get_tasks(filter = filter)
 
     def reschedule_tasks(self, project_name = None, dayTime = 0):
         listTask = []
@@ -129,9 +142,9 @@ class AliceTodoist:
             date = task.due.datetime
             if date:
                 if timeCount == 0:
-                    date = todayDatetime(date)
+                    date = todayDatetime(date, task.due.timezone)
                 else:
-                    date = plusDaysDatetime(date, timeCount)
+                    date = plusDaysDatetime(date, timeCount, task.due.timezone)
             else: 
                 date = task.due.date
                 if timeCount == 0:
@@ -146,7 +159,7 @@ class AliceTodoist:
                         "id": task.id, 
                         "due": {
                             "date": date,
-                            "timezone": task.due.timezone,
+                            "timezone": 'Europe/Moscow',
                             "string": task.due.string,
                             "lang": "en",
                             "is_recurring": task.due.recurring,

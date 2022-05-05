@@ -1,5 +1,6 @@
 import logging
 import re
+from additionalfunction.TimeHelper import getTimeZone
 from additionalfunction.processing_contents import processing_task
 from entities.AliceRequest import AliceRequest
 from entities.AliceResponse import AliceResponse
@@ -13,16 +14,14 @@ class ChoiceState(AliceState):
             res.set_answer('Пока!')
             res.end_session()
             return
-        elif req.task_list: 
+        elif req.task_list:
+            logging.info(f"getTimeZone: {getTimeZone()}")
             project_name = req.get_project_name_for_task
             logging.info(f"project_name_for_task: {project_name}")
             task_entity = todoist.get_list_task_name_by_project_and_time(project_name = project_name)
             if(task_entity.len != 0):
                 res.set_say_answer("У вас {} задач".format(task_entity.len))
-                if(len(task_entity.tasks) > 777):
-                    res.set_answer(f"{task_entity.tasks[:777]}...")
-                else:
-                    res.set_answer(task_entity.tasks)
+                res.set_answer(task_entity.tasks)
             elif task_entity.len == -1: 
                 res.set_answer(task_entity.tasks)
                 res.set_suggests([
@@ -55,10 +54,7 @@ class ChoiceState(AliceState):
 
             if(rescheduled_tasks.len != 0):
                 res.set_say_answer("Мы перенесли {}".format(processing_task(rescheduled_tasks.len)))
-                if(len(rescheduled_tasks.tasks) > 777):
-                    res.set_answer(f"{rescheduled_tasks.tasks[:777]}...")
-                else:
-                    res.set_answer(rescheduled_tasks.tasks)
+                res.set_answer(rescheduled_tasks.tasks)
             elif rescheduled_tasks.len == -1: 
                 res.set_answer(rescheduled_tasks.tasks)
                 res.set_suggests([
