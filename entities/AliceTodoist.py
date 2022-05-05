@@ -37,13 +37,17 @@ def build_task_entity(task_list: list[Task]):
             else:
                 content = task.content
 
-            if task.due and task.due.datetime:
-                content += f" | {getTimeDatetime(task.due.datetime)}"
+            if task.due:
+                content += f" | {getTimeDatetime(task.due)}"
 
             count += 1
             tasks_names += "{} - {}\n".format(count, content)
     else:
         tasks_names = "Задач нет!"
+
+    if(len(tasks_names) > 888):
+        tasks_names = f"{tasks_names[:888]}..."
+    
     return Tasks(tasks_names, count)
 
 class AliceTodoist:
@@ -155,7 +159,7 @@ class AliceTodoist:
                         "due": {
                             "date": date,
                             "timezone": task.due.timezone,
-                            "string": task.due.string,
+                            "string": None,
                             "lang": "en",
                             "is_recurring": task.due.recurring,
                         },

@@ -1,7 +1,7 @@
 from asyncio import Task
 from datetime import timedelta, datetime, date
 import logging
-from todoist_api_python.models import Task
+from todoist_api_python.models import Due
 
 def removeZ(date_str: str) -> str:
     return date_str.replace("Z", "")
@@ -13,7 +13,7 @@ def plusDaysDatetime(date_string, days):
     date_from_today = todayDatetime(date_string)
     date_string_without_z = removeZ(date_from_today)
     logging.info(f"{date_string} : {date_string_without_z}")
-    return addZ((datetime.fromisoformat(date_string_without_z) + timedelta(days=int(days)) - timedelta(hours=3)).isoformat())
+    return addZ((datetime.fromisoformat(date_string_without_z) + timedelta(days=int(days))).isoformat())
 
 def todayDatetime(date_string):
     date_string_without_z = removeZ(date_string)
@@ -26,7 +26,7 @@ def minusDaysDatetime(date_string, days):
     date_from_today = todayDatetime(date_string)
     date_string_without_z = removeZ(date_from_today)
     logging.info(f"{date_string} : {date_string_without_z}")
-    return addZ((datetime.fromisoformat(date_string_without_z) - timedelta(days=int(days), hours=3)).isoformat())
+    return addZ((datetime.fromisoformat(date_string_without_z) - timedelta(days=int(days))).isoformat())
 
 def plusDaysDate(date_string, days): 
     date_from_today = todayDate(date_string)
@@ -43,24 +43,38 @@ def minusDaysDate(date_string, days):
     logging.info(f"plusDaysDate({date_string}, {days})")
     return (date.fromisoformat(date_from_today) - timedelta(days=int(days))).isoformat()
 
-def getTimeDatetime(date_string) -> str:
-    date_string_without_z = removeZ(date_string)
-    date_task = datetime.fromisoformat(date_string_without_z) + timedelta(hours=3)
-    hourRussia = f"{date_task.hour}"
-    minute = date_task.minute
-    if date_task.minute <= 9:
-        minute = f"0{date_task.minute}"
-    
-    result = f"{hourRussia}:{minute}"
-    return result
+def addZero(elem):
+    if elem <= 9:
+        return f"0{elem}"
+    return f"{elem}"
+
+def getTimeDatetime(dueDate: Due) -> str:
+    date_string = dueDate.date
+    if dueDate.datetime:
+        date_string = dueDate.datetime
+        date_string_without_z = removeZ(date_string)
+        date_task = datetime.fromisoformat(date_string_without_z)
+        if dueDate.timezone:
+            date_task += timedelta(hours=3)
+        day = f"{addZero(date_task.day)}"
+        month = f"{addZero(date_task.month)}"
+        hourRussia = f"{addZero(date_task.hour)}"
+        minute = f"{addZero(date_task.minute)}"
+        
+        return f"{day}.{month}, {hourRussia}:{minute}"
+    else: 
+        date_string_without_z = removeZ(date_string)
+        date_task = date.fromisoformat(date_string_without_z)
+
+        return f"{date_task.day}.{date_task.month}"
 
 def getTimeZone():
     return datetime.now().tzname()
 
-def getTime(date_string):
-    date_task = datetime.now() + timedelta(days=1)
-    if(date_string and date_string.datetime):
-        date_string_without_z = removeZ(date_string.datetime)
+def getTime(dueDate: Due):
+    date_task = datetime.fromisoformat(removeZ(dueDate.date)).replace(hour = 23, minute = 59, second = 59)
+    if(dueDate and dueDate.datetime):
+        date_string_without_z = removeZ(dueDate.datetime)
         date_task = datetime.fromisoformat(date_string_without_z) + timedelta(hours=3)
 
     return date_task

@@ -6,7 +6,7 @@ from todoist_api_python.api import TodoistAPI
 from additionalfunction.processing_contents import processing_task
 from entities.AliceRequest import AliceRequest
 from entities.AliceResponse import AliceResponse
-from entities.AliceTodoist import AliceTodoist
+from entities.AliceTodoist import AliceTodoist, build_task_entity
 from main import get_current_state
 from modules.alicestates.AliceState import AliceState
 from modules.alicestates.ChoiceState import ChoiceState
@@ -315,6 +315,14 @@ class TestCheckDueForTask(unittest.TestCase):
         
         self.assertEqual(1, 1)
 
+    def checkGetTime(self):
+        req = AliceRequest(reqAuthWithoutState)
+        todoist = AliceTodoist(req)
+        list_tasks = todoist.get_list_tasks("today")
+        logging.info(build_task_entity(list_tasks).__dict__)
+        
+        self.assertEqual(1, 1)
+
 if __name__ == '__main__':
     unittest.main()
-# python3 -m unittest tests.TestCheckDueForTask.checkDueTask 
+# python3 -m unittest tests.TestCheckDueForTask.checkGetTime 
