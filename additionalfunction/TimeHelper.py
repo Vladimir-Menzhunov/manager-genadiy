@@ -72,7 +72,7 @@ def getTimeDatetime(dueDate: Due) -> str:
             hourRussia = f"{addZero(date_task.hour)}"
             minute = f"{addZero(date_task.minute)}"
             
-            return f"{day}.{month} {hourRussia}:{minute}"
+            return f" | {day}.{month} {hourRussia}:{minute}"
         else: 
             date_string_without_z = removeZ(date_string)
             date_task = date.fromisoformat(date_string_without_z)
@@ -101,3 +101,11 @@ def getDueDate(task: Task):
     if task.due:
         due_str = f"Task - {task.id}, content - {task.content[:LENGTH_CONTENT]} ==== {task.due.__dict__} ++++"
     return due_str
+
+def getDateForFilter(dayCount):
+    if dayCount:
+        dateForFilter = datetime.now().date() + timedelta(days = dayCount)
+        return dateForFilter
+    else: 
+        return None
+    

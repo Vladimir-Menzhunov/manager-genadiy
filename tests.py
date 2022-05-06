@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 import logging
 import unittest
 from additionalfunction.TimeHelper import getDueDate, getTimeZone, minusDaysDate, minusDaysDatetime, plusDaysDate, plusDaysDatetime
@@ -323,6 +324,18 @@ class TestCheckDueForTask(unittest.TestCase):
         
         self.assertEqual(1, 1)
 
+class GetTasksTest(unittest.TestCase):
+    def getTaskByDate(self):
+        req = AliceRequest(reqAuthWithoutState)
+        todoist = AliceTodoist(req)
+
+        list_tasks = todoist.get_list_tasks(datetime.now().date().isoformat())
+        logging.info(build_task_entity(list_tasks).__dict__)
+        
+        logging.info(datetime.now().date().isoformat())
+        logging.info(datetime.now().date() + timedelta(days = -1))
+        self.assertEqual(1, 1)
+
 if __name__ == '__main__':
     unittest.main()
-# python3 -m unittest tests.TestCheckDueForTask.checkDueTask 
+# python3 -m unittest tests.GetTasksTest.getTaskByDate 
