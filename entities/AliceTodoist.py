@@ -1,7 +1,7 @@
 import json
 import logging
 from todoist_api_python.api import TodoistAPI
-from additionalfunction.TimeHelper import getTime, getTimeDatetime, plusDaysDate, plusDaysDatetime, todayDate, todayDatetime
+from additionalfunction.TimeHelper import getDateForFilter, getTime, getTimeDatetime, plusDaysDate, plusDaysDatetime, todayDate, todayDatetime
 from additionalfunction.comparefunc import cosine_compare
 import operator
 from constants import LENGTH_CONTENT, LENGTH_TEXT
@@ -39,7 +39,7 @@ def build_task_entity(task_list: list[Task]):
                 content = task.content
 
             if task.due:
-                content += f" | {getTimeDatetime(task.due)}"
+                content += f"{getTimeDatetime(task.due)}"
 
             count += 1
             tasks_names += "{} - {}\n".format(count, content)
@@ -92,20 +92,19 @@ class AliceTodoist:
         logging.info(f"project_id: {project_cosine[0]}")
         return project_cosine[0]
 
-    def get_list_task_name_by_project_and_time(self, project_name = None, time = None):
+    def get_list_task_name_by_project_and_time(self, project_name = None, dayTime = None):
         listTask = []
-        if project_name and time:
-            print("project time")
-        elif project_name:
+        if project_name:
             got_project_id = self.get_project_id_by_name(project_name)
             if(got_project_id):
-                listTask = self.todoist.get_tasks(project_id = got_project_id)
+                listTask = self.todoist.get_tasks(project_id = got_project_id, filter = getDateForFilter(dayCount=dayTime))
             else:
                 return Tasks("У вас нет такого проекта. Создать проект?", -1)
-        elif time: 
-            print("time")
         else:
-            listTask = self.todoist.get_tasks(filter = "today")
+            if dayTime:
+                listTask = self.todoist.get_tasks(filter = getDateForFilter(dayCount=dayTime))
+            else:
+                listTask = self.todoist.get_tasks(filter = "today")
 
         return build_task_entity(listTask)
     

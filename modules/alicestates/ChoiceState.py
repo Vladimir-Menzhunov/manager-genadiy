@@ -8,6 +8,13 @@ from entities.AliceTodoist import AliceTodoist
 from modules.alicecontext.AliceContext import EXIT_WORDS
 from modules.alicestates.AliceState import AliceState
 
+def getDay(req: AliceRequest):
+    dayTime = 0
+    if len(req.dates) > 0:
+        dayTime = req.dates[0].get("day")
+    logging.info(f"dayTime: {dayTime}")
+    return dayTime
+
 class ChoiceState(AliceState):
     def handle_dialog(self, res: AliceResponse, req: AliceRequest, todoist: AliceTodoist):
         if set(req.words).intersection(EXIT_WORDS):
@@ -18,7 +25,8 @@ class ChoiceState(AliceState):
             logging.info(f"getTimeZone: {getTimeZone()}")
             project_name = req.get_project_name_for_task
             logging.info(f"project_name_for_task: {project_name}")
-            task_entity = todoist.get_list_task_name_by_project_and_time(project_name = project_name)
+            dayTime = getDay(req)
+            task_entity = todoist.get_list_task_name_by_project_and_time(project_name = project_name, dayTime = dayTime)
             if(task_entity.len != 0):
                 res.set_say_answer("У вас {} задач".format(task_entity.len))
                 res.set_answer(task_entity.tasks)
@@ -45,10 +53,7 @@ class ChoiceState(AliceState):
             project_name = req.get_project_name_for_reschedule
             logging.info(f"project_name_for_task: {project_name}")
 
-            dayTime = 0
-            if len(req.dates) > 0:
-                dayTime = req.dates[0].get("day")
-            logging.info(f"dayTime: {dayTime}")
+            dayTime = getDay(req)
             
             rescheduled_tasks = todoist.reschedule_tasks(project_name = project_name, dayTime = dayTime)
 
