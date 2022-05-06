@@ -59,35 +59,40 @@ def addZero(elem):
     return f"{elem}"
 
 def getTimeDatetime(dueDate: Due) -> str:
-    date_string = dueDate.date
-    if dueDate.datetime:
-        date_string = dueDate.datetime
-        date_string_without_z = removeZ(date_string)
-        date_task = datetime.fromisoformat(date_string_without_z)
-        if dueDate.timezone:
-            date_task += timedelta(hours=3)
-        day = f"{addZero(date_task.day)}"
-        month = f"{addZero(date_task.month)}"
-        hourRussia = f"{addZero(date_task.hour)}"
-        minute = f"{addZero(date_task.minute)}"
-        
-        return f"{day}.{month}, {hourRussia}:{minute}"
-    else: 
-        date_string_without_z = removeZ(date_string)
-        date_task = date.fromisoformat(date_string_without_z)
+    if dueDate:
+        date_string = dueDate.date
+        if dueDate.datetime:
+            date_string = dueDate.datetime
+            date_string_without_z = removeZ(date_string)
+            date_task = datetime.fromisoformat(date_string_without_z)
+            if dueDate.timezone:
+                date_task += timedelta(hours=3)
+            day = f"{addZero(date_task.day)}"
+            month = f"{addZero(date_task.month)}"
+            hourRussia = f"{addZero(date_task.hour)}"
+            minute = f"{addZero(date_task.minute)}"
+            
+            return f"{day}.{month} {hourRussia}:{minute}"
+        else: 
+            date_string_without_z = removeZ(date_string)
+            date_task = date.fromisoformat(date_string_without_z)
 
-        return f"{date_task.day}.{date_task.month}"
+            return f" | {date_task.day}.{date_task.month}"
+    else: 
+        return ""
 
 def getTimeZone():
     return datetime.now().tzname()
 
 def getTime(dueDate: Due):
-    date_task = datetime.fromisoformat(removeZ(dueDate.date)).replace(hour = 23, minute = 59, second = 59)
-    if(dueDate and dueDate.datetime):
-        date_string_without_z = removeZ(dueDate.datetime)
-        date_task = datetime.fromisoformat(date_string_without_z)
-        if dueDate.timezone:
-            date_task += timedelta(hours=3)
+    date_task = datetime.now() + timedelta(days=99)
+    if dueDate:
+        date_task = datetime.fromisoformat(removeZ(dueDate.date)).replace(hour = 23, minute = 59, second = 59)
+        if(dueDate and dueDate.datetime):
+            date_string_without_z = removeZ(dueDate.datetime)
+            date_task = datetime.fromisoformat(date_string_without_z)
+            if dueDate.timezone:
+                date_task += timedelta(hours=3)
 
     return date_task
 

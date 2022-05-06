@@ -39,7 +39,7 @@ def build_task_entity(task_list: list[Task]):
                 content = task.content
 
             if task.due:
-                content += f" | {getTimeDatetime(task.due)}"
+                content += f"{getTimeDatetime(task.due)}"
 
             count += 1
             tasks_names += "{} - {}\n".format(count, content)
