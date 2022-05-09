@@ -1,7 +1,7 @@
 import json
 import logging
 from todoist_api_python.api import TodoistAPI
-from additionalfunction.TimeHelper import getDateForFilter, getTime, getTimeDatetime, plusDaysDate, plusDaysDatetime, todayDate, todayDatetime
+from additionalfunction.TimeHelper import FromToDateTime, getDateForFilter, getTime, getTimeDatetime, minusDaysDate, plusDaysDate, plusDaysDatetime, todayDate, todayDatetime
 from additionalfunction.comparefunc import cosine_compare
 import operator
 from constants import LENGTH_CONTENT, LENGTH_TEXT
@@ -104,10 +104,26 @@ class AliceTodoist:
             if dayTime:
                 listTask = self.todoist.get_tasks(filter = getDateForFilter(dayCount=dayTime))
             else:
-                listTask = self.todoist.get_tasks(filter = "today")
+                listTask = self.todoist.get_tasks(filter = getDateForFilter(dayCount=0))
 
         return build_task_entity(listTask)
     
+    def get_list_task_coming_hours_by_project_name(self, project_name = None, hours = None):
+        listTask = []
+        if project_name:
+            got_project_id = self.get_project_id_by_name(project_name)
+            if(got_project_id):
+                listTask = self.todoist.get_tasks(project_id = got_project_id, filter = f"due before: +{hours} hours & !overdue")
+            else:
+                return Tasks("У вас нет такого проекта. Создать проект?", -1)
+        else:
+            if hours:
+                listTask = self.todoist.get_tasks(filter = f"due before: +{hours} hours & !overdue")
+            else:
+                listTask = self.todoist.get_tasks(filter = getDateForFilter(dayCount=0))
+
+        return build_task_entity(listTask)
+
     def get_list_tasks(self, filter = None):
         return self.todoist.get_tasks(filter = filter)
 
@@ -116,7 +132,8 @@ class AliceTodoist:
         if project_name:
             got_project_id = self.get_project_id_by_name(project_name)
             if(got_project_id):
-                listTask = self.todoist.get_tasks(project_id = got_project_id, filter="overdue")
+                today = minusDaysDate(1)
+                listTask = self.todoist.get_tasks(project_id = got_project_id, filter=f"due before: {today}")
             else:
                 return Tasks("У вас нет такого проекта. Создать проект?", -1)
         else:
@@ -147,7 +164,7 @@ class AliceTodoist:
             else: 
                 date = task.due.date
                 if timeCount == 0:
-                    date = todayDate(date)
+                    date = todayDate()
                 else:
                     date = plusDaysDate(date, timeCount)
             
