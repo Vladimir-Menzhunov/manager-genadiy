@@ -1,7 +1,7 @@
 import json
 import logging
 from todoist_api_python.api import TodoistAPI
-from additionalfunction.TimeHelper import getDateForFilter, getTime, getTimeDatetime, plusDaysDate, plusDaysDatetime, todayDate, todayDatetime
+from additionalfunction.TimeHelper import DateSettings, DayMonth, FromToDateTime, addZ, getDateForFilter, getTime, getTimeDatetime, minusDaysDate, plusDaysDate, plusDaysDatetime, todayDate, todayDatetime
 from additionalfunction.comparefunc import cosine_compare
 import operator
 from constants import LENGTH_CONTENT, LENGTH_TEXT
@@ -92,42 +92,91 @@ class AliceTodoist:
         logging.info(f"project_id: {project_cosine[0]}")
         return project_cosine[0]
 
-    def get_list_task_name_by_project_and_time(self, project_name = None, dayTime = None):
+    def get_list_task_name_by_project_and_time(self, project_name = None, dayMonthTime = None):
         listTask = []
         if project_name:
             got_project_id = self.get_project_id_by_name(project_name)
             if(got_project_id):
-                listTask = self.todoist.get_tasks(project_id = got_project_id, filter = getDateForFilter(dayCount=dayTime))
+                listTask = self.todoist.get_tasks(project_id = got_project_id, filter = getDateForFilter(dayMonthCount=dayMonthTime))
             else:
                 return Tasks("У вас нет такого проекта. Создать проект?", -1)
         else:
-            if dayTime:
-                listTask = self.todoist.get_tasks(filter = getDateForFilter(dayCount=dayTime))
+            if dayMonthTime:
+                listTask = self.todoist.get_tasks(filter = getDateForFilter(dayMonthCount=dayMonthTime))
             else:
-                listTask = self.todoist.get_tasks(filter = "today")
+                listTask = self.todoist.get_tasks(filter = getDateForFilter(dayMonthCount=DayMonth(day=0)))
 
         return build_task_entity(listTask)
-    
-    def get_list_tasks(self, filter = None):
-        return self.todoist.get_tasks(filter = filter)
 
-    def reschedule_tasks(self, project_name = None, dayTime = 0):
+    def get_overdue_tasks_with_project(self, project_name = None):
         listTask = []
         if project_name:
             got_project_id = self.get_project_id_by_name(project_name)
             if(got_project_id):
-                listTask = self.todoist.get_tasks(project_id = got_project_id, filter="overdue")
-            else:
-                return Tasks("У вас нет такого проекта. Создать проект?", -1)
+                today = todayDate() #minusDaysDate(1)
+                listTask = self.todoist.get_tasks(project_id = got_project_id, filter=f"due before: {today}")
         else:
             listTask = self.todoist.get_tasks(filter = "overdue")
 
-        proc = Thread(target = self.update_task, args = (listTask, dayTime,))
-        proc.start()
+        return listTask
+    
+    def get_list_overdue_task(self, project_name = None):
+        listTask = self.get_overdue_tasks_with_project(project_name)
+
+        if listTask == []: 
+            return Tasks("У вас нет такого проекта. Создать проект?", -1)
+        else:
+            return build_task_entity(listTask)
+
+    def get_list_non_or_recurring_task(self, project_name = None, non_reccuring = None):
+        listTask = []
+        filter = "recurring"
+        if non_reccuring:
+            yesterday = minusDaysDate(1)
+            filter = f"due after: {yesterday} & !recurring"
+        
+        if project_name:
+            got_project_id = self.get_project_id_by_name(project_name)
+            if(got_project_id):
+                listTask = self.todoist.get_tasks(project_id = got_project_id, filter = filter)
+            else:
+                return Tasks("У вас нет такого проекта. Создать проект?", -1)
+        else:
+            listTask = self.todoist.get_tasks(filter = filter)
 
         return build_task_entity(listTask)
 
-    def update_task(self, tasks: list[Task], timeCount):
+    def get_list_task_coming_hours_by_project_name(self, project_name = None, hours = None):
+        listTask = []
+        if project_name:
+            got_project_id = self.get_project_id_by_name(project_name)
+            if(got_project_id):
+                listTask = self.todoist.get_tasks(project_id = got_project_id, filter = f"due before: +{hours} hours & !overdue")
+            else:
+                return Tasks("У вас нет такого проекта. Создать проект?", -1)
+        else:
+            if hours:
+                listTask = self.todoist.get_tasks(filter = f"due before: +{hours} hours & !overdue")
+            else:
+                listTask = self.todoist.get_tasks(filter = getDateForFilter(dayMonthCount=DayMonth(day=0)))
+
+        return build_task_entity(listTask)
+
+    def get_list_tasks(self, filter = None, project_id = None):
+        return self.todoist.get_tasks(project_id = project_id, filter = filter)
+
+    def reschedule_tasks(self, project_name = None, dayMonthTime = DayMonth(day=0)):
+        listTask = self.get_overdue_tasks_with_project(project_name)
+
+        proc = Thread(target = self.update_task, args = (listTask, dayMonthTime,))
+        proc.start()
+
+        if listTask == []: 
+            return Tasks("У вас нет такого проекта. Создать проект?", -1)
+        else:
+            return build_task_entity(listTask)
+
+    def update_task(self, tasks: list[Task], dayMonth: DayMonth):
         token = self.todoist._token
         headers = {
             'Authorization': 'Bearer {}'.format(token),
@@ -140,16 +189,22 @@ class AliceTodoist:
             #logging.info(f"task.id - {task.id}, task.due.datetime - {task.due.datetime}, task.due.date - {task.due.date}")
             date = task.due.datetime
             if date:
-                if timeCount == 0:
-                    date = todayDatetime(date, task.due.timezone)
-                else:
-                    date = plusDaysDatetime(date, timeCount, task.due.timezone)
+                if dayMonth.month:
+                    date = todayDatetime(date, task.due.timezone, dayMonth=dayMonth)
+                else:    
+                    if dayMonth.day == 0:
+                        date = todayDatetime(date, task.due.timezone)
+                    else:
+                        date = plusDaysDatetime(date, dayMonth.day, task.due.timezone)
             else: 
                 date = task.due.date
-                if timeCount == 0:
-                    date = todayDate(date)
+                if dayMonth.month:
+                    date = todayDate(dayMonth)
                 else:
-                    date = plusDaysDate(date, timeCount)
+                    if dayMonth == 0:
+                        date = todayDate()
+                    else:
+                        date = plusDaysDate(date, dayMonth.day)
             
             commands.append({
                     "type": "item_update", 
@@ -168,4 +223,53 @@ class AliceTodoist:
         
         data = 'commands=' + json.dumps(commands)
         requests.post('https://api.todoist.com/sync/v8/sync', headers=headers, data=data)
+    
+    def add_tasks(self, project_name: str, content_tasks: list[str], dateSettings: DateSettings):
+        project_id = None
+        if project_name:
+            got_project_id = self.get_project_id_by_name(project_name)
+            if(got_project_id):
+                project_id = got_project_id
+            else:
+                return Tasks("У вас нет такого проекта. Создать проект?", -1)
+
+        proc = Thread(target = self.add_task, args = (project_id, content_tasks, dateSettings,))
+        proc.start()
+
+        return Tasks("Отлично, задача добавлена. Добавим ещё что-нибудь?", 1)
         
+    def add_task(self, project_id: str, content_tasks: list[str], dateSettings: DateSettings):
+        token = self.todoist._token
+        headers = {
+            'Authorization': 'Bearer {}'.format(token),
+            'Content-Type': 'application/x-www-form-urlencoded',
+        }
+
+        commands = []
+        date = dateSettings.datetime
+        if not date:
+            date = dateSettings.date
+            if date:
+                date = date.isoformat()
+        else:
+            date = date.isoformat()
+        logging.info(f"date - {date}")
+        for content_task in content_tasks:
+            commands.append({
+                    "type": "item_add", 
+                    "temp_id": str(uuid.uuid4()),
+                    "uuid": str(uuid.uuid4()),
+                    "args": {
+                        "content": content_task, 
+                        "project_id": project_id,
+                        "due": {
+                            "date": date,
+                            "timezone": dateSettings.timezone,
+                            "lang": "en",
+                            "is_recurring": dateSettings.recurring,
+                        },
+                    }
+                })
+        
+        data = 'commands=' + json.dumps(commands)
+        requests.post('https://api.todoist.com/sync/v8/sync', headers=headers, data=data)

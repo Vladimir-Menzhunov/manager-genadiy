@@ -1,19 +1,12 @@
 import logging
-import re
-from additionalfunction.TimeHelper import getTimeZone
-from additionalfunction.processing_contents import processing_task
+from additionalfunction.TimeHelper import getDateSettings, getDayMonth, getHours, getTimeZone
+from additionalfunction.comparefunc import cosine_compare
+from additionalfunction.processing_contents import processing_overdue_task, processing_task
 from entities.AliceRequest import AliceRequest
 from entities.AliceResponse import AliceResponse
 from entities.AliceTodoist import AliceTodoist
 from modules.alicecontext.AliceContext import EXIT_WORDS
 from modules.alicestates.AliceState import AliceState
-
-def getDay(req: AliceRequest):
-    dayTime = 0
-    if len(req.dates) > 0:
-        dayTime = req.dates[0].get("day")
-    logging.info(f"dayTime: {dayTime}")
-    return dayTime
 
 class ChoiceState(AliceState):
     def handle_dialog(self, res: AliceResponse, req: AliceRequest, todoist: AliceTodoist):
@@ -25,8 +18,8 @@ class ChoiceState(AliceState):
             logging.info(f"getTimeZone: {getTimeZone()}")
             project_name = req.get_project_name_for_task
             logging.info(f"project_name_for_task: {project_name}")
-            dayTime = getDay(req)
-            task_entity = todoist.get_list_task_name_by_project_and_time(project_name = project_name, dayTime = dayTime)
+            dayMonthTime = getDayMonth(req)
+            task_entity = todoist.get_list_task_name_by_project_and_time(project_name = project_name, dayMonthTime = dayMonthTime)
             if(task_entity.len != 0):
                 res.set_say_answer("У вас {} задач".format(task_entity.len))
                 res.set_answer(task_entity.tasks)
@@ -53,9 +46,9 @@ class ChoiceState(AliceState):
             project_name = req.get_project_name_for_reschedule
             logging.info(f"project_name_for_task: {project_name}")
 
-            dayTime = getDay(req)
+            dayMonthTime = getDayMonth(req)
             
-            rescheduled_tasks = todoist.reschedule_tasks(project_name = project_name, dayTime = dayTime)
+            rescheduled_tasks = todoist.reschedule_tasks(project_name = project_name, dayMonthTime = dayMonthTime)
 
             if(rescheduled_tasks.len != 0):
                 res.set_say_answer("Мы перенесли {}".format(processing_task(rescheduled_tasks.len)))
@@ -69,6 +62,109 @@ class ChoiceState(AliceState):
                 ])
             else:
                 res.set_answer("У вас нет просроченных задач!")
+
+            return
+        elif req.task_coming_hours:
+            project_name = req.get_project_name_for_coming_hours
+            logging.info(f"project_name_for_task: {project_name}")
+
+            hours = getHours(req)
+            logging.info(f"getHours: {hours}")
+
+            task_entity = todoist.get_list_task_coming_hours_by_project_name(project_name = project_name, hours=hours)
+            if(task_entity.len != 0):
+                res.set_say_answer("У вас  {}".format(processing_task(task_entity.len)))
+                res.set_answer(task_entity.tasks)
+            elif task_entity.len == -1: 
+                res.set_answer(task_entity.tasks)
+                res.set_suggests([
+                    {'title': 'Выйти', 'hide': True},
+                    {'title': 'Создай проект Отдых', 'hide': True},
+                    {'title': 'Создай проект Учеба', 'hide': True},
+                ])
+            else:
+                res.set_answer("У вас нет задач, создадим задачу?")
+                res.set_suggests([
+                    {'title': 'Выйти', 'hide': True},
+                    {'title': 'Добавь рыбу в покупки', 'hide': True},
+                    {'title': 'Добавь практика языка в английский каждый день по 1 часу', 'hide': True},
+                ])
+            return
+        elif req.overdue_task:
+            project_name = req.get_project_name_overdue_task
+            logging.info(f"project_name_for_task: {project_name}")
+            
+            task_entity = todoist.get_list_overdue_task(project_name = project_name)
+            if(task_entity.len != 0):
+                res.set_say_answer("У вас  {}".format(processing_overdue_task(task_entity.len)))
+                res.set_answer(task_entity.tasks)
+            elif task_entity.len == -1: 
+                res.set_answer(task_entity.tasks)
+                res.set_suggests([
+                    {'title': 'Выйти', 'hide': True},
+                    {'title': 'Создай проект Отдых', 'hide': True},
+                    {'title': 'Создай проект Учеба', 'hide': True},
+                ])
+            else:
+                res.set_answer("У вас нет просроченных задач, поздравляю!")
+                res.set_suggests([
+                    {'title': 'Выйти', 'hide': True},
+                ])
+            return
+        elif req.recurring_task:
+            project_name = req.get_project_name_recurring_task
+            logging.info(f"project_name_for_task: {project_name}")
+
+            non_reccuring = req.get_non_recurring
+
+            task_entity = todoist.get_list_non_or_recurring_task(project_name = project_name, non_reccuring = non_reccuring)
+
+            if(task_entity.len != 0):
+                res.set_say_answer("У вас  {}".format(processing_task(task_entity.len)))
+                res.set_answer(task_entity.tasks)
+            elif task_entity.len == -1: 
+                res.set_answer(task_entity.tasks)
+                res.set_suggests([
+                    {'title': 'Выйти', 'hide': True},
+                    {'title': 'Создай проект Отдых', 'hide': True},
+                    {'title': 'Создай проект Учеба', 'hide': True},
+                ])
+            else:
+                res.set_answer("У вас нет задач, создадим задачу?")
+                res.set_suggests([
+                    {'title': 'Выйти', 'hide': True},
+                    {'title': 'Добавь рыбу в покупки', 'hide': True},
+                    {'title': 'Добавь практика языка в английский каждый день по 1 часу', 'hide': True},
+                ])
+            return
+        elif req.add_task:
+            project_name = req.get_project_name_add_task
+            logging.info(f"project_name_for_task: {project_name}")
+
+            content_tasks = [req.get_content_for_add_task]
+            if project_name:
+                if(cosine_compare(project_name, "покупки") > 0.91):
+                    content_tasks = req.get_content_for_add_task.split(" ")
+
+            logging.info(f"content_task: {content_tasks}")
+
+            # Если пришёл только день - завтра, послезавтра
+            # Если пришли только часы, то это сегодня в X часов
+            # если пришел месяц, то это конкретная дата, есть часы datetime - нет date
+            dateSettings = getDateSettings(req)
+            logging.info(f"dateSettings: {dateSettings}")
+
+            add_task = todoist.add_tasks(project_name=project_name, content_tasks=content_tasks, dateSettings=dateSettings)
+
+            if(add_task.len == -1):
+                res.set_answer(add_task.tasks)
+                res.set_suggests([
+                    {'title': 'Выйти', 'hide': True},
+                    {'title': 'Создай проект Отдых', 'hide': True},
+                    {'title': 'Создай проект Учеба', 'hide': True},
+                ])
+            else:
+                res.set_answer(add_task.tasks)   
 
             return
         elif len(req.words) == 0:
