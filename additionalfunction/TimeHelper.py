@@ -5,6 +5,11 @@ from todoist_api_python.models import Due, Task
 from constants import LENGTH_CONTENT
 from entities.AliceRequest import AliceRequest
 
+class DayMonth:
+    def __init__(self, day = None, month = None):
+        self.day = day
+        self.month = month
+
 def removeZ(date_str: str) -> str:
     return date_str.replace("Z", "")
 
@@ -25,9 +30,11 @@ def plusDaysDatetime(date_string, days, timezone = None):
     
     return addZ((date_task).isoformat())
 
-def todayDatetime(date_string, timezone = None):
+def todayDatetime(date_string, timezone = None, dayMonth: DayMonth = None):
     date_string_without_z = removeZ(date_string)
     today = date.today()
+    if dayMonth:
+        today = today.replace(month=dayMonth.month, day=dayMonth.day)
     logging.info(f"today - {today}")
     date_task = timezoneF(datetime.fromisoformat(date_string_without_z).replace(year=today.year, month=today.month, day=today.day), timezone)
     logging.info(f"date_task: {date_task.isoformat()}")
@@ -45,8 +52,11 @@ def plusDaysDate(date_string, days):
     logging.info(f"plusDaysDate({date_string}, {days})")
     return (date.fromisoformat(date_from_today) + timedelta(days=int(days))).isoformat()
 
-def todayDate():
+# Меняем у даты день и месяц в случае передачи dayMonth
+def todayDate(dayMonth: DayMonth = None):
     today = date.today()
+    if dayMonth:
+        today = today.replace(day=dayMonth.day, month=dayMonth.month)
     return today.isoformat()
 
 def minusDaysDate(days): 
@@ -103,12 +113,16 @@ def getDueDate(task: Task):
         due_str = f"Task - {task.id}, content - {task.content[:LENGTH_CONTENT]} ==== {task.due.__dict__} ++++"
     return due_str
 
-def getDateForFilter(dayCount):
-    if dayCount or dayCount == 0:
-        dateForFilter = datetime.now().date() + timedelta(days = dayCount)
-        return dateForFilter
-    else: 
-        return None
+def getDateForFilter(dayMonthCount: DayMonth):
+    if dayMonthCount.month:
+        dateForFilter = datetime.now().date()
+        return dateForFilter.replace(day=dayMonthCount.day, month=dayMonthCount.month)
+    else:    
+        if dayMonthCount.day or dayMonthCount.day == 0:
+            dateForFilter = datetime.now().date() + timedelta(days = dayMonthCount.day)
+            return dateForFilter
+        else: 
+            return None
     
 class FromToDateTime:
     def __init__(self, hours):
@@ -133,11 +147,16 @@ def getHours(req: AliceRequest):
     #logging.info(f"month: {month}")
 
     return hour
-
-def getDay(req: AliceRequest):
+    
+def getDayMonth(req: AliceRequest):
     #TODO - формирование дней и месяцев для получения задач по конкретной дате, если есть месяц, то считать конкретной датой
     dayTime = None
+    month = None
     if len(req.dates) > 0:
-        dayTime = req.dates[0].get("day")
+        if req.dates[0].get("day"):
+            dayTime = req.dates[0].get("day")
+        if req.dates[0].get("month"):
+            month = req.dates[0].get("month")
     logging.info(f"dayTime: {dayTime}")
-    return dayTime
+    logging.info(f"month: {month}")
+    return DayMonth(day=dayTime, month=month)

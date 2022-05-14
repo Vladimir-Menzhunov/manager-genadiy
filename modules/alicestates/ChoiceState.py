@@ -1,6 +1,6 @@
 import logging
 import re
-from additionalfunction.TimeHelper import getDay, getHours, getTimeZone
+from additionalfunction.TimeHelper import getDayMonth, getHours, getTimeZone
 from additionalfunction.processing_contents import processing_overdue_task, processing_task
 from entities.AliceRequest import AliceRequest
 from entities.AliceResponse import AliceResponse
@@ -18,8 +18,8 @@ class ChoiceState(AliceState):
             logging.info(f"getTimeZone: {getTimeZone()}")
             project_name = req.get_project_name_for_task
             logging.info(f"project_name_for_task: {project_name}")
-            dayTime = getDay(req)
-            task_entity = todoist.get_list_task_name_by_project_and_time(project_name = project_name, dayTime = dayTime)
+            dayMonthTime = getDayMonth(req)
+            task_entity = todoist.get_list_task_name_by_project_and_time(project_name = project_name, dayMonthTime = dayMonthTime)
             if(task_entity.len != 0):
                 res.set_say_answer("У вас {} задач".format(task_entity.len))
                 res.set_answer(task_entity.tasks)
@@ -46,9 +46,9 @@ class ChoiceState(AliceState):
             project_name = req.get_project_name_for_reschedule
             logging.info(f"project_name_for_task: {project_name}")
 
-            dayTime = getDay(req)
+            dayMonthTime = getDayMonth(req)
             
-            rescheduled_tasks = todoist.reschedule_tasks(project_name = project_name, dayTime = dayTime)
+            rescheduled_tasks = todoist.reschedule_tasks(project_name = project_name, dayMonthTime = dayMonthTime)
 
             if(rescheduled_tasks.len != 0):
                 res.set_say_answer("Мы перенесли {}".format(processing_task(rescheduled_tasks.len)))

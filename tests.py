@@ -2,7 +2,7 @@ from calendar import month
 from datetime import datetime, timedelta
 import logging
 import unittest
-from additionalfunction.TimeHelper import FromToDateTime, getDueDate, getTimeZone, minusDaysDate, minusDaysDatetime, plusDaysDate, plusDaysDatetime, todayDate, todayDatetime
+from additionalfunction.TimeHelper import DayMonth, FromToDateTime, getDueDate, getTimeZone, minusDaysDate, minusDaysDatetime, plusDaysDate, plusDaysDatetime, todayDate, todayDatetime
 from additionalfunction.comparefunc import cosine_compare
 from todoist_api_python.api import TodoistAPI
 from additionalfunction.processing_contents import processing_task
@@ -402,7 +402,19 @@ class GetTasksTest(unittest.TestCase):
         list_tasks = todoist.get_list_tasks(project_id="2258361766", filter = f"due after: {today} & !recurring")
         logging.info(build_task_entity(list_tasks).__dict__)
         self.assertEqual(1, 1)
+
+    def getTaskByTime(self):
+        req = AliceRequest(reqAuthWithoutState)
+        todoist = AliceTodoist(req)
+
+        dayMonth = DayMonth(day=15, month=6)
+        date = "2011-11-04"
+        timeZone = None
+        todayDatetime(date, timeZone, dayMonth=dayMonth)
+        logging.info(todayDatetime)
+        self.assertEqual(1, 1)
+
 if __name__ == '__main__':
     unittest.main()
-# python3 -m unittest tests.GetTasksTest.getReccuring
+# python3 -m unittest tests.GetTasksTest.getTaskByTime
  
