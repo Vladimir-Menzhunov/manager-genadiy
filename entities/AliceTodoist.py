@@ -128,6 +128,24 @@ class AliceTodoist:
         else:
             return build_task_entity(listTask)
 
+    def get_list_non_or_recurring_task(self, project_name = None, non_reccuring = None):
+        listTask = []
+        filter = "recurring"
+        if non_reccuring:
+            yesterday = minusDaysDate(1)
+            filter = f"due after: {yesterday} & !recurring"
+        
+        if project_name:
+            got_project_id = self.get_project_id_by_name(project_name)
+            if(got_project_id):
+                listTask = self.todoist.get_tasks(project_id = got_project_id, filter = filter)
+            else:
+                return Tasks("У вас нет такого проекта. Создать проект?", -1)
+        else:
+            listTask = self.todoist.get_tasks(filter = filter)
+
+        return build_task_entity(listTask)
+
     def get_list_task_coming_hours_by_project_name(self, project_name = None, hours = None):
         listTask = []
         if project_name:
@@ -152,7 +170,7 @@ class AliceTodoist:
 
         proc = Thread(target = self.update_task, args = (listTask, dayTime,))
         proc.start()
-        
+
         if listTask == []: 
             return Tasks("У вас нет такого проекта. Создать проект?", -1)
         else:

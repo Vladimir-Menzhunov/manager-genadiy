@@ -93,6 +93,20 @@ class AliceRequest:
         return project_name
 
     @property
+    def get_project_name_recurring_task(self):
+        project_name = None
+        if(self._request["request"]["nlu"]["intents"]["RECURRING.TASK"]["slots"].get("project")):
+            project_name = self._request["request"]["nlu"]["intents"]["RECURRING.TASK"]["slots"]["project"]["value"]
+        return project_name
+
+    @property
+    def get_non_recurring(self):
+        non_recurring = None
+        if(self._request["request"]["nlu"]["intents"]["RECURRING.TASK"]["slots"].get("nonreccurring")):
+            non_recurring = self._request["request"]["nlu"]["intents"]["RECURRING.TASK"]["slots"]["nonreccurring"]["value"]
+        return non_recurring
+        
+    @property
     def project_list(self) -> bool:
         return bool(self._request["request"]["nlu"]["intents"].get("PROJECT.LIST"))
 
@@ -108,6 +122,10 @@ class AliceRequest:
     def overdue_task(self) -> bool:
         return bool(self._request["request"]["nlu"]["intents"].get("OVERDUE.TASK"))
 
+    @property
+    def recurring_task(self) -> bool:
+        return bool(self._request["request"]["nlu"]["intents"].get("RECURRING.TASK"))
+    
     @property
     def access_token(self):
         return self.session["user"].get("access_token")
