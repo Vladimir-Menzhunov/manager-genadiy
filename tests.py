@@ -2,7 +2,7 @@ from calendar import month
 from datetime import datetime, timedelta
 import logging
 import unittest
-from additionalfunction.TimeHelper import DayMonth, FromToDateTime, getDueDate, getTimeZone, minusDaysDate, minusDaysDatetime, plusDaysDate, plusDaysDatetime, todayDate, todayDatetime
+from additionalfunction.TimeHelper import DateSettings, DayMonth, FromToDateTime, getDueDate, getTimeZone, minusDaysDate, minusDaysDatetime, plusDaysDate, plusDaysDatetime, todayDate, todayDatetime
 from additionalfunction.comparefunc import cosine_compare
 from todoist_api_python.api import TodoistAPI
 from additionalfunction.processing_contents import processing_task
@@ -413,8 +413,28 @@ class GetTasksTest(unittest.TestCase):
         todayDatetime(date, timeZone, dayMonth=dayMonth)
         logging.info(todayDatetime)
         self.assertEqual(1, 1)
+      
+    def getTaskId(self):
+        req = AliceRequest(reqAuthWithoutState)
+        todoist = AliceTodoist(req)
+
+        list_tasks = todoist.get_list_tasks()
+        logging.info(list_tasks)
+        self.assertEqual(1, 1)
+
+    def addTask(self):
+      req = AliceRequest(reqAuthWithoutState)
+      todoist = AliceTodoist(req)
+
+      #add = todoist.add_task(None, ["огурцы"], DateSettings())
+      #add = todoist.add_task(None, ["огурцы"], DateSettings(day=1))
+      #add = todoist.add_task(None, ["огурцы"], DateSettings(day=1, hour=15))
+      #add = todoist.add_task(None, ["огурцы"], DateSettings(day=1, hour=15, minute=16))
+      #add = todoist.add_task(None, ["огурцы"], DateSettings(day=1, hour=15, minute=16, month=8))
+      #logging.info(add)
+      self.assertEqual(1, 1)
 
 if __name__ == '__main__':
     unittest.main()
-# python3 -m unittest tests.GetTasksTest.getTaskByTime
+# python3 -m unittest tests.GetTasksTest.addTask
  

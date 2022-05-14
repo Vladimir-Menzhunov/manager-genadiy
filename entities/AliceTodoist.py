@@ -1,7 +1,7 @@
 import json
 import logging
 from todoist_api_python.api import TodoistAPI
-from additionalfunction.TimeHelper import DayMonth, FromToDateTime, getDateForFilter, getTime, getTimeDatetime, minusDaysDate, plusDaysDate, plusDaysDatetime, todayDate, todayDatetime
+from additionalfunction.TimeHelper import DateSettings, DayMonth, FromToDateTime, addZ, getDateForFilter, getTime, getTimeDatetime, minusDaysDate, plusDaysDate, plusDaysDatetime, todayDate, todayDatetime
 from additionalfunction.comparefunc import cosine_compare
 import operator
 from constants import LENGTH_CONTENT, LENGTH_TEXT
@@ -223,4 +223,53 @@ class AliceTodoist:
         
         data = 'commands=' + json.dumps(commands)
         requests.post('https://api.todoist.com/sync/v8/sync', headers=headers, data=data)
+    
+    def add_tasks(self, project_name: str, content_tasks: list[str], dateSettings: DateSettings):
+        project_id = None
+        if project_name:
+            got_project_id = self.get_project_id_by_name(project_name)
+            if(got_project_id):
+                project_id = got_project_id
+            else:
+                return Tasks("У вас нет такого проекта. Создать проект?", -1)
+
+        proc = Thread(target = self.add_task, args = (project_id, content_tasks, dateSettings,))
+        proc.start()
+
+        return Tasks("Отлично, задача добавлена. Добавим ещё что-нибудь?", 1)
         
+    def add_task(self, project_id: str, content_tasks: list[str], dateSettings: DateSettings):
+        token = self.todoist._token
+        headers = {
+            'Authorization': 'Bearer {}'.format(token),
+            'Content-Type': 'application/x-www-form-urlencoded',
+        }
+
+        commands = []
+        date = dateSettings.datetime
+        if not date:
+            date = dateSettings.date
+            if date:
+                date = date.isoformat()
+        else:
+            date = date.isoformat()
+        logging.info(f"date - {date}")
+        for content_task in content_tasks:
+            commands.append({
+                    "type": "item_add", 
+                    "temp_id": str(uuid.uuid4()),
+                    "uuid": str(uuid.uuid4()),
+                    "args": {
+                        "content": content_task, 
+                        "project_id": project_id,
+                        "due": {
+                            "date": date,
+                            "timezone": dateSettings.timezone,
+                            "lang": "en",
+                            "is_recurring": dateSettings.recurring,
+                        },
+                    }
+                })
+        
+        data = 'commands=' + json.dumps(commands)
+        requests.post('https://api.todoist.com/sync/v8/sync', headers=headers, data=data)

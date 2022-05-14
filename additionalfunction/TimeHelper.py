@@ -160,3 +160,62 @@ def getDayMonth(req: AliceRequest):
     logging.info(f"dayTime: {dayTime}")
     logging.info(f"month: {month}")
     return DayMonth(day=dayTime, month=month)
+
+class DateSettings:
+    def __init__(self, day = None, month = None, hour = None, minute = None) -> None:
+        self.day = day
+        self.month = month
+        self.hour = hour
+        self.minute = minute
+        self.recurring = False
+
+        temp_datetime = None
+        temp_date = None
+        # Если пришёл только день - завтра, послезавтра
+        # Если пришли только часы, то это сегодня в X часов
+        # если пришел месяц, то это конкретная дата, есть часы datetime - нет date
+        if month:
+            if hour:
+                if minute:
+                    temp_datetime = datetime.today().replace(day=day, month=month, hour=hour, minute=minute, microsecond=0)
+                    temp_date = temp_datetime.date()
+                else:
+                    temp_datetime = datetime.today().replace(day=day, month=month, hour=hour, minute=0, microsecond=0)
+                    temp_date = temp_datetime.date()
+            else: 
+                temp_date = date.today().replace(day=day, month=month)
+        elif day:
+            if hour:
+                if minute:
+                    temp_datetime = datetime.today().replace(hour=hour, minute=minute, microsecond=0) + timedelta(days=day)
+                    temp_date = temp_datetime.date()
+                else:
+                    temp_datetime = datetime.today().replace(hour=hour, minute=0, microsecond=0) + timedelta(days=day)
+                    temp_date = temp_datetime.date()
+            else: 
+                temp_date = date.today() + timedelta(days=day)
+        
+        self.datetime = temp_datetime
+        self.date = temp_date
+        self.timezone = 'Europe/Moscow'
+
+def getDateSettings(req: AliceRequest):
+    day = None
+    month = None
+    hour = None
+    minute = None
+    if len(req.dates) > 0:
+        if req.dates[0].get("day"):
+            day = req.dates[0].get("day")
+        if req.dates[0].get("month"):
+            month = req.dates[0].get("month")
+        if req.dates[0].get("hour"):
+            hour = req.dates[0].get("hour")
+        if req.dates[0].get("minute"):
+            minute = req.dates[0].get("minute")
+    logging.info(f"day: {day}")
+    logging.info(f"month: {month}")
+    logging.info(f"hour: {hour}")
+    logging.info(f"minute: {minute}")
+
+    return DateSettings(day = day, month = month, hour = hour, minute = minute)

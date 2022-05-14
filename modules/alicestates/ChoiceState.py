@@ -1,6 +1,6 @@
 import logging
-import re
-from additionalfunction.TimeHelper import getDayMonth, getHours, getTimeZone
+from additionalfunction.TimeHelper import getDateSettings, getDayMonth, getHours, getTimeZone
+from additionalfunction.comparefunc import cosine_compare
 from additionalfunction.processing_contents import processing_overdue_task, processing_task
 from entities.AliceRequest import AliceRequest
 from entities.AliceResponse import AliceResponse
@@ -136,6 +136,36 @@ class ChoiceState(AliceState):
                     {'title': 'Добавь рыбу в покупки', 'hide': True},
                     {'title': 'Добавь практика языка в английский каждый день по 1 часу', 'hide': True},
                 ])
+            return
+        elif req.add_task:
+            project_name = req.get_project_name_add_task
+            logging.info(f"project_name_for_task: {project_name}")
+
+            content_tasks = [req.get_content_for_add_task]
+            if project_name:
+                if(cosine_compare(project_name, "покупки") > 0.91):
+                    content_tasks = req.get_content_for_add_task.split(" ")
+
+            logging.info(f"content_task: {content_tasks}")
+
+            # Если пришёл только день - завтра, послезавтра
+            # Если пришли только часы, то это сегодня в X часов
+            # если пришел месяц, то это конкретная дата, есть часы datetime - нет date
+            dateSettings = getDateSettings(req)
+            logging.info(f"dateSettings: {dateSettings}")
+
+            add_task = todoist.add_tasks(project_name=project_name, content_tasks=content_tasks, dateSettings=dateSettings)
+
+            if(add_task.len == -1):
+                res.set_answer(add_task.tasks)
+                res.set_suggests([
+                    {'title': 'Выйти', 'hide': True},
+                    {'title': 'Создай проект Отдых', 'hide': True},
+                    {'title': 'Создай проект Учеба', 'hide': True},
+                ])
+            else:
+                res.set_answer(add_task.tasks)   
+
             return
         elif len(req.words) == 0:
             res.set_answer("Рад тебя снова видеть братишка! Что спланируем сегодня?")

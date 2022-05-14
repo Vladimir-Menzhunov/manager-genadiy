@@ -100,6 +100,20 @@ class AliceRequest:
         return project_name
 
     @property
+    def get_project_name_add_task(self):
+        project_name = None
+        if(self._request["request"]["nlu"]["intents"]["ADD.TASK"]["slots"].get("project")):
+            project_name = self._request["request"]["nlu"]["intents"]["ADD.TASK"]["slots"]["project"]["value"]
+        return project_name
+
+    @property
+    def get_content_for_add_task(self):
+        content = None
+        if(self._request["request"]["nlu"]["intents"]["ADD.TASK"]["slots"].get("task")):
+            content = self._request["request"]["nlu"]["intents"]["ADD.TASK"]["slots"]["task"]["value"]
+        return content
+
+    @property
     def get_non_recurring(self):
         non_recurring = None
         if(self._request["request"]["nlu"]["intents"]["RECURRING.TASK"]["slots"].get("nonreccurring")):
@@ -126,6 +140,10 @@ class AliceRequest:
     def recurring_task(self) -> bool:
         return bool(self._request["request"]["nlu"]["intents"].get("RECURRING.TASK"))
     
+    @property
+    def add_task(self) -> bool:
+        return bool(self._request["request"]["nlu"]["intents"].get("ADD.TASK"))
+
     @property
     def access_token(self):
         return self.session["user"].get("access_token")
