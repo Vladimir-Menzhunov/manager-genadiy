@@ -107,7 +107,27 @@ class AliceTodoist:
                 listTask = self.todoist.get_tasks(filter = getDateForFilter(dayCount=0))
 
         return build_task_entity(listTask)
+
+    def get_overdue_tasks_with_project(self, project_name = None):
+        listTask = []
+        if project_name:
+            got_project_id = self.get_project_id_by_name(project_name)
+            if(got_project_id):
+                today = todayDate() #minusDaysDate(1)
+                listTask = self.todoist.get_tasks(project_id = got_project_id, filter=f"due before: {today}")
+        else:
+            listTask = self.todoist.get_tasks(filter = "overdue")
+
+        return listTask
     
+    def get_list_overdue_task(self, project_name = None):
+        listTask = self.get_overdue_tasks_with_project(project_name)
+
+        if listTask == []: 
+            return Tasks("У вас нет такого проекта. Создать проект?", -1)
+        else:
+            return build_task_entity(listTask)
+
     def get_list_task_coming_hours_by_project_name(self, project_name = None, hours = None):
         listTask = []
         if project_name:
@@ -124,25 +144,19 @@ class AliceTodoist:
 
         return build_task_entity(listTask)
 
-    def get_list_tasks(self, filter = None):
-        return self.todoist.get_tasks(filter = filter)
+    def get_list_tasks(self, filter = None, project_id = None):
+        return self.todoist.get_tasks(project_id = project_id, filter = filter)
 
     def reschedule_tasks(self, project_name = None, dayTime = 0):
-        listTask = []
-        if project_name:
-            got_project_id = self.get_project_id_by_name(project_name)
-            if(got_project_id):
-                today = minusDaysDate(1)
-                listTask = self.todoist.get_tasks(project_id = got_project_id, filter=f"due before: {today}")
-            else:
-                return Tasks("У вас нет такого проекта. Создать проект?", -1)
-        else:
-            listTask = self.todoist.get_tasks(filter = "overdue")
+        listTask = self.get_overdue_tasks_with_project(project_name)
 
         proc = Thread(target = self.update_task, args = (listTask, dayTime,))
         proc.start()
-
-        return build_task_entity(listTask)
+        
+        if listTask == []: 
+            return Tasks("У вас нет такого проекта. Создать проект?", -1)
+        else:
+            return build_task_entity(listTask)
 
     def update_task(self, tasks: list[Task], timeCount):
         token = self.todoist._token

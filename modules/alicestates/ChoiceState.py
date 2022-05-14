@@ -1,7 +1,7 @@
 import logging
 import re
 from additionalfunction.TimeHelper import getDay, getHours, getTimeZone
-from additionalfunction.processing_contents import processing_task
+from additionalfunction.processing_contents import processing_overdue_task, processing_task
 from entities.AliceRequest import AliceRequest
 from entities.AliceResponse import AliceResponse
 from entities.AliceTodoist import AliceTodoist
@@ -88,6 +88,27 @@ class ChoiceState(AliceState):
                     {'title': 'Выйти', 'hide': True},
                     {'title': 'Добавь рыбу в покупки', 'hide': True},
                     {'title': 'Добавь практика языка в английский каждый день по 1 часу', 'hide': True},
+                ])
+            return
+        elif req.overdue_task:
+            project_name = req.get_project_name_overdue_task
+            logging.info(f"project_name_for_task: {project_name}")
+            
+            task_entity = todoist.get_list_overdue_task(project_name = project_name)
+            if(task_entity.len != 0):
+                res.set_say_answer("У вас  {}".format(processing_overdue_task(task_entity.len)))
+                res.set_answer(task_entity.tasks)
+            elif task_entity.len == -1: 
+                res.set_answer(task_entity.tasks)
+                res.set_suggests([
+                    {'title': 'Выйти', 'hide': True},
+                    {'title': 'Создай проект Отдых', 'hide': True},
+                    {'title': 'Создай проект Учеба', 'hide': True},
+                ])
+            else:
+                res.set_answer("У вас нет просроченных задач, поздравляю!")
+                res.set_suggests([
+                    {'title': 'Выйти', 'hide': True},
                 ])
             return
         elif len(req.words) == 0:

@@ -86,6 +86,13 @@ class AliceRequest:
         return project_name
 
     @property
+    def get_project_name_overdue_task(self):
+        project_name = None
+        if(self._request["request"]["nlu"]["intents"]["OVERDUE.TASK"]["slots"].get("project")):
+            project_name = self._request["request"]["nlu"]["intents"]["OVERDUE.TASK"]["slots"]["project"]["value"]
+        return project_name
+
+    @property
     def project_list(self) -> bool:
         return bool(self._request["request"]["nlu"]["intents"].get("PROJECT.LIST"))
 
@@ -96,6 +103,10 @@ class AliceRequest:
     @property
     def task_coming_hours(self) -> bool:
         return bool(self._request["request"]["nlu"]["intents"].get("TASK.COMING.HOURS"))
+
+    @property
+    def overdue_task(self) -> bool:
+        return bool(self._request["request"]["nlu"]["intents"].get("OVERDUE.TASK"))
 
     @property
     def access_token(self):

@@ -51,7 +51,7 @@ def todayDate():
 
 def minusDaysDate(days): 
     date_from_today = todayDate()
-    logging.info(f"plusDaysDate({date_from_today}, {days})")
+    logging.info(f"minusDaysDate({date_from_today}, {days})")
     return (date.fromisoformat(date_from_today) - timedelta(days=int(days))).isoformat()
 
 def addZero(elem):
@@ -78,7 +78,7 @@ def getTimeDatetime(dueDate: Due) -> str:
             date_string_without_z = removeZ(date_string)
             date_task = date.fromisoformat(date_string_without_z)
 
-            return f" | {date_task.day}.{date_task.month}"
+            return f" | {addZero(date_task.day)}.{addZero(date_task.month)}"
     else: 
         return ""
 

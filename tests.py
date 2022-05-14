@@ -2,7 +2,7 @@ from calendar import month
 from datetime import datetime, timedelta
 import logging
 import unittest
-from additionalfunction.TimeHelper import FromToDateTime, getDueDate, getTimeZone, minusDaysDate, minusDaysDatetime, plusDaysDate, plusDaysDatetime, todayDatetime
+from additionalfunction.TimeHelper import FromToDateTime, getDueDate, getTimeZone, minusDaysDate, minusDaysDatetime, plusDaysDate, plusDaysDatetime, todayDate, todayDatetime
 from additionalfunction.comparefunc import cosine_compare
 from todoist_api_python.api import TodoistAPI
 from additionalfunction.processing_contents import processing_task
@@ -13,6 +13,54 @@ from main import get_current_state
 from modules.alicestates.AliceState import AliceState
 from modules.alicestates.ChoiceState import ChoiceState
 from modules.alicestates.HelloState import HelloState
+
+"""
+покажи список просроченных задач
+покажи список просроченных задач в покупках
+просроченные задачи в покупках
+просроченные задачи
+покажи что просрочено в покупках
+покажи что просроченно
+список проектов 
+покажи проекты 
+покажи какие есть проекты
+Перенеси просроченные задачи
+Перенос просроченных задач
+Перенос просроченных задач на сегодня
+Перенос просроченных дел в покупках
+Перенос просроченных задач в работе 
+перенеси просроченные задачи в работе на послезавтра
+задачи в ближайшие 3 часа
+задачи в покупках на ближайшие 3 часа 
+задачи в покупках на ближайший час
+задачи в покупках на ближайший день
+задачи в покупках ближайшие 3 часа
+Список задач
+Список Дел
+список задач в покупках
+список дел в покупках
+что есть в идеях 
+Список задач на сегодня
+задачи в покупках 
+покажи задачи в покупках
+покажи что в покупках
+покажи задачи на завтра 
+покажи задачи на вчера
+покажи задачи которые были вчера
+покажи задачи в работе на завтра 
+
+покажи регулярные задачи
+покажи регулярные задачи в работе
+какие регулярные задачи в работе
+какие есть регулярные задачи в работе
+регулярные задачи в работе
+покажи нерегулярные задачи
+покажи нерегулярные задачи в работе
+какие нерегулярные задачи в работе
+какие есть нерегулярные задачи в работе
+нерегулярные задачи в работе
+список регулярных задач
+"""
 
 reqNoAuth = {
     "meta": {
@@ -344,6 +392,17 @@ class GetTasksTest(unittest.TestCase):
         logging.info(datetime.now().date() + timedelta(days = -1))
         self.assertEqual(1, 1)
 
+    def getReccuring(self):
+        req = AliceRequest(reqAuthWithoutState)
+        todoist = AliceTodoist(req)
+        today = minusDaysDate(1)
+        #listTask = self.todoist.get_tasks(project_id = got_project_id, filter=f"due before: {today}")
+        #due before: +8 hours & !overdue
+        logging.info(f"today: {today}")
+        list_tasks = todoist.get_list_tasks(project_id="2258361766", filter = f"due after: {today} & !recurring")
+        logging.info(build_task_entity(list_tasks).__dict__)
+        self.assertEqual(1, 1)
 if __name__ == '__main__':
     unittest.main()
-# python3 -m unittest tests.TestDueDatetime.test_correct_datetime 
+# python3 -m unittest tests.GetTasksTest.getReccuring
+ 
