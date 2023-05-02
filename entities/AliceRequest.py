@@ -166,7 +166,11 @@ class AliceRequest:
 
     @property
     def state_application(self) -> dict:
-        return self._request["state"]["application"]  
+        if(self._request.get("state")):
+            return self._request.get("state").get("application")
+        else:
+            return {}
+
 
     @property
     def request_string(self):

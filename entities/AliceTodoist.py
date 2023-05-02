@@ -235,7 +235,7 @@ class AliceTodoist:
 
         proc = Thread(target = self.add_task, args = (project_id, content_tasks, dateSettings,))
         proc.start()
-
+        logging.info(self.add_task(project_id,content_tasks, dateSettings))
         return Tasks("Отлично, задача добавлена. Добавим ещё что-нибудь?", 1)
         
     def add_task(self, project_id: str, content_tasks: list[str], dateSettings: DateSettings):
@@ -272,4 +272,6 @@ class AliceTodoist:
                 })
         
         data = 'commands=' + json.dumps(commands)
-        requests.post('https://api.todoist.com/sync/v8/sync', headers=headers, data=data)
+        logging.info("headers" + str(headers))
+        logging.info("data" + str(data))
+        requests.post('https://api.todoist.com/sync/v9/sync', headers=headers, data=data)
